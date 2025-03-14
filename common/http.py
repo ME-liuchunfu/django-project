@@ -98,7 +98,8 @@ class ParseRequestMetaUser:
     def __call__(self):
         return self.user
 
+
     def get_userid(self) -> int:
-        return self.user.get("")
+        return self.user.get("user_id")
 
 

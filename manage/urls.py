@@ -19,7 +19,7 @@ from tkinter.font import names
 from django.contrib import admin
 from django.urls import path, include
 
-from system.views import LoginView, LogoutView, CaptchaImageView
+from system.views import LoginView, LogoutView, CaptchaImageView, RoutersView
 
 from system.user.views import LoginUserInfoView
 
@@ -29,6 +29,7 @@ urlpatterns = [
     path('logout', LogoutView.as_view(), name="logout"), # 登出
     path('getInfo', LoginUserInfoView.as_view(), name='getInfo'), # 获取用户信息
     path('captchaImage', CaptchaImageView.as_view(), name='captchaImage'), # 验证码
+    path('getRouters', RoutersView.as_view(), name='getRouters'), # 路由
     path('system/', include('system.urls')), # 系统模块
     path('monitor/', include('monitor.urls')), # 监控模块
 

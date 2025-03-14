@@ -10,6 +10,7 @@ from common.http import AjaxJsonResponse, RequestBody, ParseJson, ParseRequestMe
 from system.models import SysUser
 import logging
 
+from system.user.services import get_routers
 
 logger = logging.getLogger(__name__)
 
@@ -104,3 +105,15 @@ class LogoutView(View):
 
     def post(self, request):
         return AjaxJsonResponse(msg='success')
+
+
+class RoutersView(View):
+
+    """
+    路由
+    """
+
+    def get(self, request):
+        user_id = ParseRequestMetaUser(request).get_userid()
+        menus_data = get_routers(user_id)
+        return AjaxJsonResponse(msg='success', data=menus_data)
