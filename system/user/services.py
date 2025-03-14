@@ -32,19 +32,20 @@ class RouterVo:
             'name': None,
             'path': None,
             'hidden': True,
-            'redirect': 'noRedirect',
+            # 'redirect': 'noRedirect',
             'component': '',
-            'query': None,
-            'alwaysShow': False,
+            # 'query': None,
+            # 'alwaysShow': False,
             'meta': MetaVo(),
             'children': []
         }
         if data:
             self.data['name'] = get_route_name(data)
-            self.data['path'] = get_route_name(data)
+            self.data['path'] = get_route_path(data)
             self.data['hidden'] = data.get('visible')
             self.data['component'] = get_component(data)
-            self.data['query'] = data.get('query')
+            if data.get('query'):
+                self.data['query'] = data.get('query')
             link = data.get('path') if is_http(data.get('path')) else None
             self.set_meta(MetaVo(
                 {
@@ -53,7 +54,7 @@ class RouterVo:
                 'noCache': data.get('is_cache') == '1',
                 'link': link
                 }
-            ))
+            ).data)
             if 'visible' in data and not isinstance(data.get('visible'), bool):
                 self.data['hidden'] = data.get('visible') == '1'
 
@@ -61,7 +62,7 @@ class RouterVo:
         self.data[key] = value
 
 
-    def set_meta(self, meta: MetaVo = None):
+    def set_meta(self, meta: dict = None):
         self.data['meta'] = meta
 
     def __str__(self):
@@ -132,12 +133,12 @@ def build_tree_menus(menus_list: list) -> list:
                 'icon': menu.get('icon'),
                 'noCache': "1" == menu.get('is_cache'),
                 'link': menu.get('path')
-            }))
+            }).data)
             children_list.append(router)
             router_vo.data_value('children', children_list)
 
         elif menu.get('parent_id') == 0 and is_inner_link(menu):
-            router_vo.set_meta(MetaVo({'title': menu.get('menu_name'), 'icon': menu.get('icon')}))
+            router_vo.set_meta(MetaVo({'title': menu.get('menu_name'), 'icon': menu.get('icon')}).data)
             router_vo.data_value('path', '/')
             children_list = []
             router = RouterVo()
@@ -149,11 +150,11 @@ def build_tree_menus(menus_list: list) -> list:
                 'title': menu.get('menu_name'),
                 'icon': menu.get('icon'),
                 'link': menu.get('path')
-            }))
+            }).data)
             children_list.append(router)
             router_vo.data_value('children', children_list)
 
-        tree_datas.append(router_vo)
+        tree_datas.append(router_vo.data)
 
 
     return tree_datas
@@ -210,6 +211,18 @@ def is_menu_frame(menu: dict) -> bool:
     return menu.get('parent_id') == 0 and "C" == menu.get('menu_type') and menu.get('is_frame') == "1"
 
 
+def get_route_path(menu: dict):
+    path = menu.get("path")
+    if menu.get('parent_id') != 0 and is_inner_link(menu):
+        path = inner_link_replace_each(path)
+    if 0 == menu.get('parent_id') and menu.get('menu_type') == 'M' and 1 == menu.get('is_frame'):
+        path = "/" + path
+    elif is_menu_frame(menu):
+        path = "/"
+
+    return path
+
+
 def get_route_name(menu: dict):
     """
     Get the route name from the menu information.
@@ -217,7 +230,7 @@ def get_route_name(menu: dict):
     :param menu: SysMenu object containing menu information
     :return: The route name
     """
-    if menu.get('is_frame'):
+    if is_menu_frame(menu):
         return ""
     return format_route_name(menu.get('route_name'), menu.get('path'))
 

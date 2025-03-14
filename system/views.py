@@ -73,7 +73,7 @@ class LoginView(View):
         try:
             user = SysUser.objects.filter(username=username).first()
             if not user:
-                raise ValueError("账号存在")
+                raise ValueError("账号不存在")
             if user.status == '1':
                 raise ValueError("账号停用")
             if not bcrypt_check_password(user.password, password):
