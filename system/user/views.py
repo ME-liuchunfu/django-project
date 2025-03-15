@@ -1,7 +1,7 @@
 from django.views import View
 from common.http import AjaxJsonResponse, ParseRequestMetaUser
 from system.user.dto_serializers import UserInfoDto
-from system.user.services import get_role_permission, get_menu_permission
+from system.user.permission_services import get_role_permission, get_menu_permission
 
 
 class LoginUserInfoView(View):

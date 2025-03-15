@@ -215,7 +215,7 @@ def get_route_path(menu: dict):
     path = menu.get("path")
     if menu.get('parent_id') != 0 and is_inner_link(menu):
         path = inner_link_replace_each(path)
-    if 0 == menu.get('parent_id') and menu.get('menu_type') == 'M' and 1 == menu.get('is_frame'):
+    if 0 == menu.get('parent_id') and menu.get('menu_type') == 'M' and "1" == menu.get('is_frame'):
         path = "/" + path
     elif is_menu_frame(menu):
         path = "/"

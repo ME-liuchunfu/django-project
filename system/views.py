@@ -10,7 +10,7 @@ from common.http import AjaxJsonResponse, RequestBody, ParseJson, ParseRequestMe
 from system.models import SysUser
 import logging
 
-from system.user.services import get_routers
+from system.user.permission_services import get_routers
 
 logger = logging.getLogger(__name__)
 

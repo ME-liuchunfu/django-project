@@ -16,12 +16,14 @@ class AjaxJsonResponse(JsonResponse):
     }
     """
 
-    def __init__(self, code: int = 200, msg: str = '', data = None, extra_dict: dict = None, **kwargs):
+    def __init__(self, code: int = 200, msg: str = 'success', data=None, extra_dict: dict = None, **kwargs):
         content = {
             'code': code,
             'msg': msg,
         }
         if data:
+            content['data'] = data
+        elif isinstance(data, dict) or isinstance(data, list) or isinstance(data, tuple):
             content['data'] = data
 
         if extra_dict:
@@ -70,7 +72,6 @@ class ParseJson:
 
 
 class ParseRequestMetaUser:
-
     """
     解析jwt授权用户信息
     数据类型：dict
@@ -98,8 +99,8 @@ class ParseRequestMetaUser:
     def __call__(self):
         return self.user
 
-
     def get_userid(self) -> int:
         return self.user.get("user_id")
 
-
+    def get_username(self) -> str:
+        return self.user.get("username")
