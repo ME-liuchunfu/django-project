@@ -3,6 +3,7 @@ from django.urls import path, include, re_path
 
 from system.dict.views import DictDataType
 from system.menu.views import MenuInfoView, MenuListView
+from system.post.views import PostListView
 from system.views import LoginView
 
 urlpatterns = [
@@ -12,5 +13,8 @@ urlpatterns = [
     re_path('menu/(?P<menu_id>[0-9].*)$', MenuInfoView.as_view(), name='menu_info'), # 菜单信息 查询 & 删除
     path('menu', MenuInfoView.as_view(), name='menu_info_update'), # 菜单信息 修改
     path('menu', MenuInfoView.as_view(), name='menu_info_add'), # 菜单信息 新增
+
+    # 岗位管理
+    path('post/list', PostListView.as_view(), name='post_list'), # 岗位列表
 
 ]

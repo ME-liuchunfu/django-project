@@ -1,7 +1,7 @@
 import json
 import logging
 
-from django.http import JsonResponse
+from django.http import JsonResponse, QueryDict
 
 logger = logging.getLogger(__name__)
 
@@ -104,3 +104,53 @@ class ParseRequestMetaUser:
 
     def get_username(self) -> str:
         return self.user.get("username")
+
+
+class RequestGetParams:
+
+    """
+    解析http get参数
+    """
+
+    def __init__(self, request):
+        self.request = request
+        self.data = {}
+        self.__parse(request)
+
+    def __parse(self, request):
+        path = request.path
+        try:
+            get_data: QueryDict = request.GET
+            if get_data:
+                data = get_data.dict()
+                self.data = data
+        except Exception as e:
+            logger.error(f'[解析http get参数异常], path:{path}')
+
+    def get_data(self) -> tuple | list | dict:
+        return self.data
+
+class RequestPostParams:
+
+    """
+    解析http post from请求参数
+    """
+
+    def __init__(self, request):
+        self.request = request
+        self.data = {}
+        self.__parse(request)
+
+    def __parse(self, request):
+        path = request.path
+        try:
+            post_data = request.POST
+            if post_data:
+                data = post_data.as_dict()
+                self.data = data
+        except Exception as e:
+            logger.error(f'[解析http post参数异常], path:{path}')
+
+    def get_data(self) -> tuple | list | dict:
+        return self.data
+
