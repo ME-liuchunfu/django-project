@@ -1,7 +1,7 @@
 import json
 import logging
 
-from django.http import JsonResponse, QueryDict
+from django.http import JsonResponse, QueryDict, HttpResponse
 
 logger = logging.getLogger(__name__)
 
@@ -146,11 +146,34 @@ class RequestPostParams:
         try:
             post_data = request.POST
             if post_data:
-                data = post_data.as_dict()
+                data = post_data.dict()
                 self.data = data
         except Exception as e:
             logger.error(f'[解析http post参数异常], path:{path}')
 
     def get_data(self) -> tuple | list | dict:
         return self.data
+
+
+class ResponseStream:
+
+    """
+    返回文件流
+    """
+
+    def to_http_response(self, content_type: str = None, name: str = None) -> HttpResponse:
+        if content_type is None:
+            content_type = 'application/stream'
+
+        if name is None:
+            name = "stream.tmp"
+
+        response = HttpResponse(content_type=content_type)
+        response['Content-Disposition'] = f'attachment; filename="{name}"'
+
+        return response
+
+    def excel_http_response(self, name: str = None) -> HttpResponse:
+        content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        return self.to_http_response(content_type=content_type, name=name)
 

@@ -3,7 +3,7 @@ from django.urls import path, include, re_path
 
 from system.dict.views import DictDataType
 from system.menu.views import MenuInfoView, MenuListView
-from system.post.views import PostListView
+from system.post.views import PostListView, PostInfoView
 from system.views import LoginView
 
 urlpatterns = [
@@ -16,5 +16,10 @@ urlpatterns = [
 
     # 岗位管理
     path('post/list', PostListView.as_view(), name='post_list'), # 岗位列表
+    path('post/export', PostListView.as_view(), name='post_list_export'), # 岗位信息 导出
+    path('post/<int:post_id>', PostInfoView.as_view(), name='post_info'), # 岗位列表 查询 & 删除
+    path('post', PostInfoView.as_view(), name='post_info_add'), # 岗位信息 新增
+
+
 
 ]

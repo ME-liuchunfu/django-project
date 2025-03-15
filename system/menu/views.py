@@ -32,7 +32,7 @@ class MenuInfoView(View):
         user = ParseRequestMetaUser(request)
         user_id = user.get_userid()
         user_name = user.get_username()
-        res_data = MenuService().update(data, user_id=user_id, user_name=user_name)
+        res_data = MenuService().update_menu(data, user_id=user_id, user_name=user_name)
         return AjaxJsonResponse(data=res_data)
 
 

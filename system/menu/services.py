@@ -79,7 +79,7 @@ class MenuService:
             logger.error(f'[删除菜单失败],menu_id:{menu_id}', exc_info=True)
         return row
 
-    def update(self, menu: dict, user_id: int, user_name: str) -> int:
+    def update_menu(self, menu: dict, user_id: int, user_name: str) -> int:
         try:
             menu = keys_to_snake(menu)
             update_dict = {}
