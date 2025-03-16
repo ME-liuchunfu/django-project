@@ -5,6 +5,7 @@ from system.dict.views import DictDataType
 from system.menu.views import MenuInfoView, MenuListView, MenuTreeView
 from system.post.views import PostListView, PostInfoView
 from system.role.views import RoleListView, RoleInfoView, RoleStatusView, RoleDataView
+from system.dept.views import DeptListView, DeptInfoView, DeptExcludeView
 from system.views import LoginView
 
 urlpatterns = [
@@ -14,7 +15,6 @@ urlpatterns = [
     path('menu/treeselect', MenuTreeView.as_view(), name='menu_tree'), # 菜单下拉树
     re_path('menu/(?P<menu_id>[0-9].*)$', MenuInfoView.as_view(), name='menu_info'), # 菜单信息 查询 & 删除
     path('menu', MenuInfoView.as_view(), name='menu_info_update'), # 菜单信息 修改
-    path('menu', MenuInfoView.as_view(), name='menu_info_add'), # 菜单信息 新增
 
     # 岗位管理
     path('post/list', PostListView.as_view(), name='post_list'), # 岗位列表
@@ -29,5 +29,12 @@ urlpatterns = [
     path('role/deptTree/<int:role_id>', RoleDataView.as_view(), name='role_info_data'), # 角色信息 数据
     path('role/<int:role_id>', RoleInfoView.as_view(), name='role_info'), # 角色列表 查询 & 删除
     path('role', RoleInfoView.as_view(), name='role_info_add'), # 角色信息 新增
+
+    # 部门管理
+    path('dept/list', DeptListView.as_view(), name='post_list'), # 部门列表
+    path('dept/list/exclude/<int:dept_id>', DeptExcludeView.as_view(), name='post_list_exclude'), # 查询部门列表（排除节点）
+    path('dept/export', DeptListView.as_view(), name='post_list_export'), # 部门信息 导出
+    path('dept/<int:post_id>', DeptInfoView.as_view(), name='post_info'), # 部门列表 查询 & 删除
+    path('dept', DeptInfoView.as_view(), name='post_info_add'), # 部门信息 新增
 
 ]

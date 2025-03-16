@@ -1,7 +1,13 @@
 import logging
 import re
+from typing import Any
 
-from common.data_frame import inject_sql_params_dict
+from django.http import HttpResponse
+from django.utils import timezone
+
+from common.data_frame import inject_sql_params_dict, ParsePageResult, inject_page_params, PageResult, \
+    get_model_fields_name, del_not_model_key
+from common.http import ResponseStream
 from common.utils import keys_to_camel, keys_to_snake
 from system.models import SysDept
 from system.serializers.models import SysDeptSerializer
@@ -117,3 +123,115 @@ class DeptService:
             for child in children:
                 res_dict['children'].append(self.__build_tree(child))
         return res_dict
+
+    def dept_list(self, req_data: dict) -> list:
+        try:
+            req_data = keys_to_snake(req_data)
+            sql_params_dict = {}
+            inject_sql_params_dict(req_dict=req_data, sql_param_dict=sql_params_dict, handler=self.search_key_handler)
+            query_set = SysDept.objects.filter(**sql_params_dict).order_by("dept_id").all()
+            res_datas = []
+            if query_set and len(query_set) > 0:
+                for data in query_set:
+                    dt = self.serializer_model(data)
+                    dt['children'] = []
+                    res_datas.append(dt)
+            return res_datas
+        except Exception as e:
+            logger.error(f'[查询部门列表异常], req_data: {req_data}', exc_info=True)
+            return []
+
+    def serializer_model(self, data: SysDept) -> Any | None:
+        try:
+            return keys_to_camel(SysDeptSerializer(data).data)
+        except Exception as e:
+            logger.error(f'序列化异常', exc_info=True)
+            return None
+
+    def dept_info(self, dept_id: int) -> dict:
+        res_data = {}
+        try:
+            data = SysDept.objects.filter(dept_id=dept_id).get()
+            res_data = self.serializer_model(data)
+        except Exception as e:
+            logger.error(f'[查询部门信息]异常, dept_id: {dept_id}', exc_info=True)
+        return res_data
+
+    def del_dept(self, dept_id: int) -> int:
+        try:
+            row, _ = SysDept.objects.filter(dept_id=dept_id).delete()
+            return row
+        except Exception as e:
+            logger.error(f'[删除部门信息]异常, dept_id: {dept_id}', exc_info=True)
+            return 0
+
+    def add_dept(self, user_id: int, user_name: str, req_dict: dict) -> int:
+        try:
+            add_dict = keys_to_snake(req_dict)
+            add_dict['create_by'] = user_name
+            add_dict['create_time'] = timezone.now()
+            sys_post = SysDept(**add_dict)
+            sys_post.save()
+            return 1
+        except Exception as e:
+            logger.error(f'[新增部门信息]异常, user_id:{user_id}, user_name:{user_name}, req_dict:{req_dict}', exc_info=True)
+            return 0
+
+    def update_dept(self, user_id: int, user_name: str, req_dict: dict) -> int:
+        try:
+            params_dict = keys_to_snake(req_dict)
+            update_dict = {}
+            if not params_dict.get('dept_id'):
+                raise ValueError("参数错误")
+
+            all_columns = get_model_fields_name(SysDept)
+            read_only_keys = ['create_by', 'create_time', 'dept_id', 'update_time']
+            for key, value in params_dict.items():
+                if key in read_only_keys:
+                    continue
+                if key not in all_columns:
+                    continue
+                update_dict[key] = value
+
+            update_dict['update_by'] = user_name
+            update_dict['update_time'] = timezone.now()
+            row = SysDept.objects.filter(dept_id=params_dict.get('dept_id')).update(**update_dict)
+        except Exception as e:
+            row = 0
+            logger.error(f'[更新部门异常],req_dict:{req_dict}', exc_info=True)
+
+        return row
+
+    def export_dept(self, req_data : dict) -> HttpResponse:
+        try:
+            req_data = keys_to_snake(req_data)
+            sql_params_dict = {}
+            inject_sql_params_dict(req_dict=req_data, sql_param_dict=sql_params_dict, handler=self.search_key_handler)
+            query_set = SysDept.objects.filter(**sql_params_dict).order_by("dept_id").all()
+            response = ResponseStream().query_set_to_excel_http_response(name="部门信息", query_set=query_set)
+            return response
+        except Exception as e:
+            logger.error(f'[导出部门信息]异常')
+            raise ValueError('导出部门信息异常') from e
+
+    def exclude_dept_list(self, dept_id: int, req_dict: dict) -> list:
+        """
+        查询部门列表（排除节点）
+        """
+        res_datas = []
+        try:
+            sql_params_dict = keys_to_snake(req_dict)
+            all_columns = get_model_fields_name(SysDept)
+            del_not_model_key(sql_params_dict, all_columns)
+            query_set = SysDept.objects.filter(**sql_params_dict).all()
+            if query_set and len(query_set) > 0:
+                for data in query_set:
+                    dt = self.serializer_model(data)
+                    if dt.get('dept_id') == dept_id or (dt.get('ancestors') and (str(dept_id) in dt.get('ancestors').split(','))):
+                        continue
+                    dt['children'] = []
+                    res_datas.append(dt)
+        except Exception as e:
+            logger.error(f'[查询部门-排除节点]错误, dept_id:{dept_id}, req_dict:{req_dict}', exc_info=True)
+
+        return res_datas
