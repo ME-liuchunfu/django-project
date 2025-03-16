@@ -47,5 +47,14 @@ class RoleInfoView(View):
         req_dict = RequestBody(request).get_data()
         user_id = user.get_userid()
         user_name = user.get_username()
-        res_data, _msg = RoleService().update_role(user_id=user_id, user_name=user_name, post=req_dict)
+        res_data, _msg = RoleService().update_role(user_id=user_id, user_name=user_name, req_dict=req_dict)
         return AjaxJsonResponse(data=res_data, code=200 if res_data > 0 else 500, msg= _msg if _msg else None)
+
+
+
+class RoleStatusView(View):
+
+    def put(self, request):
+        req_dict = RequestBody(request).get_data()
+        res_dict = RoleService().change_status(req_dict=req_dict)
+        return AjaxJsonResponse(extra_dict=res_dict)

@@ -4,7 +4,7 @@ from django.urls import path, include, re_path
 from system.dict.views import DictDataType
 from system.menu.views import MenuInfoView, MenuListView, MenuTreeView
 from system.post.views import PostListView, PostInfoView
-from system.role.views import RoleListView, RoleInfoView
+from system.role.views import RoleListView, RoleInfoView, RoleStatusView
 from system.views import LoginView
 
 urlpatterns = [
@@ -25,6 +25,7 @@ urlpatterns = [
     # 角色管理
     path('role/list', RoleListView.as_view(), name='role_list'), # 角色列表
     path('role/export', RoleListView.as_view(), name='role_list_export'), # 角色信息 导出
+    path('role/changeStatus', RoleStatusView.as_view(), name='role_info_status'), # 角色信息 状态变更
     path('role/<int:role_id>', RoleInfoView.as_view(), name='role_info'), # 角色列表 查询 & 删除
     path('role', RoleInfoView.as_view(), name='role_info_add'), # 角色信息 新增
 

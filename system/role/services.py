@@ -121,10 +121,10 @@ class RoleService:
 
             # 判断 role_key 是否存在
             key_role = SysRole.objects.filter(role_key=update_dict['role_key']).all()
-            if key_role and len(key_role) > 0:
+            if key_role and len(key_role) > 0 and key_role[0].role_id != update_dict['role_id']:
                 return -1, '角色权限已存在'
             key_name = SysRole.objects.filter(role_name=update_dict['role_name']).all()
-            if key_name and len(key_name) > 0:
+            if key_name and len(key_name) > 0 and key_name[0].role_id != update_dict['role_id']:
                 return -1, '角色名称已存在'
 
             all_columns = get_model_fields_name(SysRole)
@@ -138,6 +138,7 @@ class RoleService:
 
             update_dict['update_by'] = user_name
             update_dict['update_time'] = timezone.now()
+            del_not_model_key(params_dict=update_dict, all_columns=all_columns)
             row = SysRole.objects.filter(role_id=update_dict.get('role_id')).update(**update_dict)
             # 更新菜单
             RoleMenuService().del_role_menus(role_id=update_dict.get('role_id'))
@@ -166,3 +167,22 @@ class RoleService:
         if role_id is None:
             return False
         return role_id == 1
+
+    def change_status(self, req_dict: dict) -> dict:
+        res_dict = {}
+        try:
+            req_dict = keys_to_snake(req_dict)
+            if not req_dict.get('role_id') or not req_dict.get('status'):
+                res_dict['msg'] = "参数错误"
+                res_dict['code'] = 500
+
+            if self.is_admin(req_dict.get('role_id')):
+                res_dict['msg'] = "不允许操作超级管理员"
+                res_dict['code'] = 500
+            SysRole.objects.filter(role_id=req_dict.get('role_id')).update(status=req_dict.get('status'))
+        except Exception as e:
+            logger.error(f'[状态变更错误], req_dict:{req_dict}', exc_info=True)
+            res_dict['msg'] = "状态变更错误"
+            res_dict['code'] = 500
+
+        return res_dict
