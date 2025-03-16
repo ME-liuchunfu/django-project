@@ -49,12 +49,12 @@ class PostService:
             logger.error(f'[查询岗位信息]异常, post_id: {post_id}', exc_info=True)
         return res_data
 
-    def del_post(self, post_id: int) -> int:
+    def del_post(self, post_ids: list[int]) -> int:
         try:
-            row, _ = SysPost.objects.filter(post_id=post_id).delete()
+            row, _ = SysPost.objects.filter(post_id__in=post_ids).delete()
             return row
         except Exception as e:
-            logger.error(f'[删除岗位信息]异常, post_id: {post_id}', exc_info=True)
+            logger.error(f'[删除岗位信息]异常, post_ids: {post_ids}', exc_info=True)
             return 0
 
     def add_post(self, user_id: int, user_name: str, req_dict: dict) -> int:

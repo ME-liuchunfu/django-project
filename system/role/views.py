@@ -26,12 +26,13 @@ class RoleInfoView(View):
     角色信息
     """
 
-    def get(self, request, role_id):
-        res_data = RoleService().role_info(role_id)
+    def get(self, request, role_ids):
+        res_data = RoleService().role_info(role_id=int(role_ids))
         return AjaxJsonResponse(data=res_data)
 
-    def delete(self, request, role_id):
-        res_data = RoleService().del_role(role_id)
+    def delete(self, request, role_ids):
+        role_ids = [int(v) for v in role_ids.split(',')]
+        res_data = RoleService().del_role(role_ids=role_ids)
         return AjaxJsonResponse(data=res_data)
 
     def post(self, request):

@@ -26,12 +26,13 @@ class PostInfoView(View):
     岗位信息
     """
 
-    def get(self, request, post_id):
-        res_data = PostService().post_info(post_id)
+    def get(self, request, post_ids):
+        res_data = PostService().post_info(post_id=int(post_ids))
         return AjaxJsonResponse(data=res_data)
 
-    def delete(self, request, post_id):
-        res_data = PostService().del_post(post_id)
+    def delete(self, request, post_ids):
+        post_ids = [ int(v) for v in post_ids.split(',') ]
+        res_data = PostService().del_post(post_ids=post_ids)
         return AjaxJsonResponse(data=res_data)
 
     def post(self, request):

@@ -57,14 +57,15 @@ class RoleService:
             logger.error(f'[查询角色信息]异常, role_id: {role_id}', exc_info=True)
         return res_data
 
-    def del_role(self, role_id: int) -> int:
+    def del_role(self, role_ids: list[int]) -> int:
         try:
-            row, _ = SysRole.objects.filter(role_id=role_id).delete()
+            row, _ = SysRole.objects.filter(role_id__in=role_ids).delete()
             # 删除角色菜单
-            RoleMenuService().del_role_menus(role_id)
+            for role_id in role_ids:
+                RoleMenuService().del_role_menus(role_id)
             return row
         except Exception as e:
-            logger.error(f'[删除角色信息]异常, role_id: {role_id}', exc_info=True)
+            logger.error(f'[删除角色信息]异常, role_ids: {role_ids}', exc_info=True)
             return 0
 
     def add_role(self, user_id: int, user_name: str, req_dict: dict) -> tuple:
