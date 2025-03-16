@@ -4,6 +4,7 @@ from django.urls import path, include, re_path
 from system.config.views import ConfigListView, ConfigInfoView
 from system.dict.views import DictDataType
 from system.menu.views import MenuInfoView, MenuListView, MenuTreeView
+from system.notice.views import NoticeListView, NoticeInfoView
 from system.post.views import PostListView, PostInfoView
 from system.role.views import RoleListView, RoleInfoView, RoleStatusView, RoleDataView
 from system.dept.views import DeptListView, DeptInfoView, DeptExcludeView
@@ -46,4 +47,9 @@ urlpatterns = [
     path('config/<str:config_ids>', ConfigInfoView.as_view(), name='config_info'), # 参数设置列表 查询 & 删除
     path('config', ConfigInfoView.as_view(), name='config_info_add'), # 参数设置 新增
 
+    # 通知公告
+    path('notice/list', NoticeListView.as_view(), name='notice_list'), # 通知公告列表
+    path('notice/export', NoticeListView.as_view(), name='notice_list_export'), # 通知公告信息 导出
+    path('notice/<str:notice_ids>', NoticeInfoView.as_view(), name='notice_info'), # 通知公告列表 查询 & 删除
+    path('notice', NoticeInfoView.as_view(), name='notice_info_add'), # 通知公告 新增
 ]
