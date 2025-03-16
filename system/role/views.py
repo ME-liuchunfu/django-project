@@ -58,3 +58,10 @@ class RoleStatusView(View):
         req_dict = RequestBody(request).get_data()
         res_dict = RoleService().change_status(req_dict=req_dict)
         return AjaxJsonResponse(extra_dict=res_dict)
+
+
+class RoleDataView(View):
+
+    def get(self, request, role_id: int):
+        res_dict = RoleService().dept_tree(role_id=role_id)
+        return AjaxJsonResponse(extra_dict=res_dict)

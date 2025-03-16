@@ -7,7 +7,7 @@ from common.data_frame import PageResult, ParsePageResult, inject_page_params, i
     parse_sql_columns, get_model_fields_name, del_not_model_key
 from common.http import ResponseStream
 from common.utils import keys_to_snake, keys_to_camel
-from system.menu.services import MenuService
+from system.dept.services import DeptService
 from system.models import SysRole, SysRoleMenu
 from system.rolemenu.services import RoleMenuService
 from system.serializers.models import SysRoleSerializer
@@ -185,4 +185,15 @@ class RoleService:
             res_dict['msg'] = "状态变更错误"
             res_dict['code'] = 500
 
+        return res_dict
+
+    def dept_tree(self, role_id:int) -> dict:
+        sys_role = SysRole.objects.filter(role_id=role_id).get()
+        keys = DeptService().dept_list_by_role_id(role_id=sys_role.role_id, dept_check_strictly=sys_role.dept_check_strictly)
+        dept_list = DeptService().dept_tree_list(params_dict={})
+        depts = DeptService().build_dept_tree(dept_list)
+        res_dict = {
+            "checkedKeys": keys,
+            "depts": depts
+        }
         return res_dict
