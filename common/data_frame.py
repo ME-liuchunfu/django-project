@@ -1,6 +1,8 @@
 import logging
-
+from datetime import datetime
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage, Page
+from django.db.models import QuerySet
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -60,20 +62,22 @@ class ParsePageResult:
     def set_convert_handler(self, convert_handler):
         self.convert_handler = convert_handler
 
-    def page(self, data_query_set) -> PageResult:
-        paginator = Paginator(data_query_set, self.page_size)
+    def page(self, data_query_set: QuerySet) -> PageResult:
+        count = 0
         try:
+            paginator = Paginator(object_list=data_query_set, per_page=self.page_size)
+            count = paginator.count
             # 根据页码获取对应的页面
             page_obj = paginator.get_page(self.cur_page)
         except PageNotAnInteger:
-            page_obj = paginator.page(1)
+            page_obj = None
         except EmptyPage:
             page_obj = None
         except Exception as e:
             page_obj = None
             logger.error(f'[分页处理异常]')
         data_list = self.__parse_handler(page_obj)
-        return PageResult(total=paginator.count, datas=data_list)
+        return PageResult(total=count, datas=data_list)
 
     def __parse_handler(self, page_obj: Page) -> list:
         res_data_list = []
@@ -130,6 +134,60 @@ def inject_sql_params_dict(req_dict: dict = None,
             if k not in excloud_keys:
                 if handler is not None:
                     cvt_key = handler(k)
-                    sql_param_dict[cvt_key] = v
+                    if cvt_key:
+                        sql_param_dict[cvt_key] = v
                 else:
                     sql_param_dict[k] = v
+
+
+def sql_date_parse(date_str: str, format_str: str = '%Y-%m-%d'):
+    naive_datetime = datetime.strptime(date_str, format_str)
+    # 为日期时间对象添加时区信息
+    aware_datetime = timezone.make_aware(naive_datetime)
+    return aware_datetime
+
+
+def parse_sql_columns(req_dict: dict = None, sql_params_dict: dict = None, columns: dict = None):
+    """
+    设置 sql区间查询
+    """
+    if req_dict is not None and sql_params_dict is not None:
+        if columns is None:
+            columns = {
+                'create_time': {
+                    "convert": sql_date_parse,
+                    "format": "%Y-%m-%d",
+                    "val": ['params[begin_time]', 'params[end_time]']
+                },
+            }
+
+        for k, v in columns.items():
+            range_flag = False
+            for item in v['val']:
+                if item in req_dict:
+                    range_flag = True
+                    break
+            if range_flag:
+                sql_params_dict[f'{k}__range'] = (
+                    v['convert'](req_dict.get(v['val'][0]), v.get("format")),
+                    v['convert'](req_dict.get(v['val'][1]), v.get("format"))
+                )
+
+
+def get_model_fields_name(model) -> list[str]:
+    """
+    获取所有模型字段
+    """
+    all_columns = [field.name for field in model._meta.get_fields()]
+    return all_columns
+
+
+def del_not_model_key(params_dict: dict = None, all_columns: list = None):
+    """
+    删除非模型字段 key
+    """
+    if params_dict is not None and all_columns is not None:
+        keys = set(params_dict.keys())
+        for k in keys:
+            if k not in all_columns:
+                del params_dict[k]

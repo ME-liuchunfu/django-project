@@ -63,6 +63,66 @@ class MenuService:
 
         return ret_datas
 
+    def build_menu_treeselect(self, datas: list) -> list[dict]:
+        """
+        菜单下拉树
+        """
+        res_datas = []
+        temp_list = [menu.get('menuId') for menu in datas]
+
+        for data in datas:
+            parent_id = data.get('parentId')
+            if parent_id not in temp_list:
+                self.__recursion_fn(datas, data)
+                res_datas.append(data)
+                pass
+        if len(temp_list) == 0:
+            res_datas = datas
+
+        res_datas = self.to_menu_select_tree(res_datas)
+        return res_datas
+
+    def __recursion_fn(self, datas: list, data: dict):
+        """
+        递归列表
+        """
+        child_list = self.__get_child_list(datas, data)
+        data['children'] = child_list
+        for child in child_list:
+            if self.__has_child(datas, child):
+                self.__recursion_fn(datas, child)
+
+    def __has_child(self, datas, child) -> bool:
+        n_list = self.__get_child_list(datas=datas, t=child)
+        return len(n_list) > 0
+
+    def __get_child_list(self, datas: list[dict], t: dict) -> list:
+        t_datas = []
+        for n in datas:
+            if n.get('parentId') == t.get('menuId'):
+                t_datas.append(n)
+        return t_datas
+
+    def to_menu_select_tree(self, datas: list) -> list[dict]:
+        res_datas = []
+        for data in datas:
+            res_datas.append(self.build_menu_tree_dict(data))
+        return res_datas
+
+    def build_menu_tree_dict(self, menu: dict) -> dict:
+        children = menu.get('children')
+        data = {
+            'id': menu.get('menuId'),
+            'label': menu.get('menuName'),
+            'children': [],
+        }
+        if children and len(children) > 0:
+            c_list = []
+            for child in children:
+                c_list.append(self.build_menu_tree_dict(child))
+            data['children'].extend(c_list)
+        return data
+
     def menu(self, menu_id: int) -> dict:
         data = SysMenu.objects.get(menu_id=menu_id)
         if data:
@@ -114,3 +174,4 @@ class MenuService:
             logger.error(f'[新增菜单异常], menu: {menu_dict}', exc_info=True)
 
         return row
+

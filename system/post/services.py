@@ -1,10 +1,9 @@
 import logging
 from typing import Any
-import pandas as pd
-from django.http import FileResponse, HttpResponse
+from django.http import HttpResponse
 from django.utils import timezone
-
-from common.data_frame import PageResult, ParsePageResult, inject_page_params, inject_sql_params_dict
+from common.data_frame import PageResult, ParsePageResult, inject_page_params, inject_sql_params_dict, \
+    get_model_fields_name
 from common.http import ResponseStream
 from common.utils import keys_to_snake, keys_to_camel
 from system.models import SysPost
@@ -26,7 +25,7 @@ class PostService:
             sql_params_dict = {}
             inject_sql_params_dict(req_dict=req_data, sql_param_dict=sql_params_dict, handler=self.search_key_handler)
             parse_page_result = ParsePageResult()
-            query_set = SysPost.objects.filter(**sql_params_dict).all()
+            query_set = SysPost.objects.filter(**sql_params_dict).order_by("post_id").all()
             parse_page_result.set_convert_handler(self.serializer_model)
             inject_page_params(req_dict=req_data, parse_page=parse_page_result)
             return parse_page_result(data_query_set=query_set)
@@ -77,9 +76,12 @@ class PostService:
             if not post.get('post_id'):
                 raise ValueError("参数错误")
 
+            all_columns = get_model_fields_name(SysPost)
             read_only_keys = ['create_by', 'create_time', 'post_id', 'update_time']
             for key, value in post.items():
                 if key in read_only_keys:
+                    continue
+                if key not in all_columns:
                     continue
                 update_dict[key] = value
 
@@ -97,7 +99,7 @@ class PostService:
             req_data = keys_to_snake(req_data)
             sql_params_dict = {}
             inject_sql_params_dict(req_dict=req_data, sql_param_dict=sql_params_dict, handler=self.search_key_handler)
-            query_set = SysPost.objects.filter(**sql_params_dict).all()
+            query_set = SysPost.objects.filter(**sql_params_dict).order_by("post_id").all()
             response = ResponseStream().query_set_to_excel_http_response(name="岗位信息", query_set=query_set)
             return response
         except Exception as e:

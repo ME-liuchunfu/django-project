@@ -18,6 +18,8 @@ class AjaxJsonResponse(JsonResponse):
     """
 
     def __init__(self, code: int = 200, msg: str = 'success', data=None, extra_dict: dict = None, **kwargs):
+        if msg is None:
+            msg = 'success'
         content = {
             'code': code,
             'msg': msg,
@@ -195,11 +197,15 @@ class ResponseStream:
         response = self.excel_http_response(name=name)
         for time_field in time_fields:
             if time_field in df.columns:
-                # 将带时区的日期时间转换为无时区的日期时间
-                df[time_field] = df[time_field].dt.tz_localize(None)
+                try:
+                    # 将带时区的日期时间转换为无时区的日期时间
+                    df[time_field] = df[time_field].apply(lambda x: x.tz_localize(None) if x is not None else x)
+                    # non_null_mask = df[time_field].notna()
+                    # df.loc[non_null_mask, time_field] = df.loc[non_null_mask, time_field].dt.tz_localize(None)
+                except Exception as e:
+                    logger.error(f'[pandas转换时区异常]', exc_info=True)
 
         if row_handler:
             row_handler(pd)
-
         df.to_excel(response, index=False, engine='openpyxl')
         return response

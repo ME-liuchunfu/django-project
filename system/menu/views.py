@@ -1,17 +1,28 @@
 from django.http import QueryDict
 from django.views import View
 
-from common.http import AjaxJsonResponse, ParseRequestMetaUser, ParseJson, RequestBody
+from common.http import AjaxJsonResponse, ParseRequestMetaUser, ParseJson, RequestBody, RequestGetParams
 from system.menu.services import MenuService
 
 
 class MenuListView(View):
 
     def get(self, request):
-        query_dict: QueryDict = request.GET
-        dict_value = query_dict.dict()
+        dict_value = RequestGetParams(request=request).get_data()
         user_id = ParseRequestMetaUser(request).get_userid()
         res_datas = MenuService().menu_list(params=dict_value, user_id=user_id)
+        return AjaxJsonResponse(data=res_datas)
+
+
+
+class MenuTreeView(View):
+
+    def get(self, request):
+        dict_value = RequestGetParams(request=request).get_data()
+        user_id = ParseRequestMetaUser(request).get_userid()
+        menu_service = MenuService()
+        res_datas = menu_service.menu_list(params=dict_value, user_id=user_id)
+        res_datas = menu_service.build_menu_treeselect(res_datas)
         return AjaxJsonResponse(data=res_datas)
 
 
