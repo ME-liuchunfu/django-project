@@ -98,19 +98,7 @@ class PostService:
             sql_params_dict = {}
             inject_sql_params_dict(req_dict=req_data, sql_param_dict=sql_params_dict, handler=self.search_key_handler)
             query_set = SysPost.objects.filter(**sql_params_dict).all()
-            res_datas = list(query_set.values())
-            df = pd.DataFrame(res_datas)
-            response_stream = ResponseStream()
-            response = response_stream.excel_http_response(name="岗位信息")
-            if 'create_time' in df.columns:
-                # 将带时区的日期时间转换为无时区的日期时间
-                df['create_time'] = df['create_time'].dt.tz_localize(None)
-
-            if 'update_time' in df.columns:
-                # 将带时区的日期时间转换为无时区的日期时间
-                df['update_time'] = df['update_time'].dt.tz_localize(None)
-
-            df.to_excel(response, index=False, engine='openpyxl')
+            response = ResponseStream().query_set_to_excel_http_response(name="岗位信息", query_set=query_set)
             return response
         except Exception as e:
             logger.error(f'[导出岗位信息]异常')

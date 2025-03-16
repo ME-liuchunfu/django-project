@@ -1,6 +1,7 @@
 import json
 import logging
-
+import pandas as pd
+from django.db.models import QuerySet
 from django.http import JsonResponse, QueryDict, HttpResponse
 
 logger = logging.getLogger(__name__)
@@ -177,3 +178,28 @@ class ResponseStream:
         content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         return self.to_http_response(content_type=content_type, name=name)
 
+    def query_set_to_excel_http_response(self, name: str = None, query_set: QuerySet = None,
+                                         time_fields: list[str] = None, row_handler=None) -> HttpResponse:
+        if time_fields is None:
+            time_fields = ['create_time', 'update_time']
+
+        if query_set is None:
+            df_data = [[]]
+        else:
+            df_data = list(query_set.values())
+
+        df = pd.DataFrame(df_data)
+        if name is None:
+            name = "stream.tmp"
+
+        response = self.excel_http_response(name=name)
+        for time_field in time_fields:
+            if time_field in df.columns:
+                # 将带时区的日期时间转换为无时区的日期时间
+                df[time_field] = df[time_field].dt.tz_localize(None)
+
+        if row_handler:
+            row_handler(pd)
+
+        df.to_excel(response, index=False, engine='openpyxl')
+        return response
