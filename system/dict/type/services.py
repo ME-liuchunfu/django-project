@@ -69,9 +69,13 @@ class DictTypeService:
             add_dict = keys_to_snake(req_dict)
             add_dict['create_by'] = user_name
             add_dict['create_time'] = timezone.now()
-
             all_columns = get_model_fields_name(SysDictType)
             del_not_model_key(add_dict, all_columns)
+            # 先查询字典key是否存在
+            db_dict_types = SysDictType.objects.filter(dict_type=add_dict.get('dict_type')).all()
+            if db_dict_types and len(db_dict_types) > 0:
+                return -1, '字典类型已存在'
+
             sys_dict = SysDictType(**add_dict)
             sys_dict.save()
             return 1, None
@@ -100,6 +104,13 @@ class DictTypeService:
             update_dict['update_time'] = timezone.now()
             all_columns = get_model_fields_name(SysDictType)
             del_not_model_key(update_dict, all_columns)
+            # 先查询字典key是否存在，切不等于当前id
+            db_dict_types = SysDictType.objects.filter(dict_type=update_dict.get('dict_type')).all()
+            if db_dict_types and len(db_dict_types) > 0:
+                for qs in db_dict_types:
+                    if qs.dict_id != dict.get('dict_id'):
+                        return -1, '字典类型已存在'
+
             row = SysDictType.objects.filter(dict_id=dict.get('dict_id')).update(**update_dict)
         except Exception as e:
             logger.error(f'[更新字典类型异常],req_dict:{dict}', exc_info=True)

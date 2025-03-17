@@ -21,6 +21,7 @@ class ConfigListView(View):
         return response
 
     def delete(self, request):
+        # todo test
         return AjaxJsonResponse()
 
 

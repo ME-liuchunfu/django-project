@@ -4,7 +4,7 @@ from typing import Any
 from django.http import HttpResponse
 from django.utils import timezone
 from common.data_frame import PageResult, ParsePageResult, inject_page_params, inject_sql_params_dict, \
-    get_model_fields_name, del_not_model_key, parse_sql_columns, sql_date_parse
+    get_model_fields_name, del_not_model_key, parse_sql_columns, sql_date_parse, del_int_column_key
 from common.http import ResponseStream
 from common.utils import keys_to_snake, keys_to_camel
 from system.models import SysLogininfor
@@ -26,9 +26,9 @@ class OperLogService:
 
     def get_time_columns(self):
         return {
-            'oper_time': {
+            'login_time': {
                 "convert": sql_date_parse,
-                "format": "%Y-%m-%d",
+                "format": "%Y-%m-%d %H:%M:%S",
                 "val": ['params[begin_time]', 'params[end_time]']
             },
         }
@@ -40,6 +40,7 @@ class OperLogService:
             inject_sql_params_dict(req_dict=req_data, sql_param_dict=sql_params_dict, handler=self.search_key_handler)
             parse_sql_columns(req_dict=req_data, sql_params_dict=sql_params_dict, columns=self.get_time_columns())
             parse_page_result = ParsePageResult()
+            del_int_column_key(sql_params_dict, ['is_asc', 'order_by_column'])
             query_set = SysLogininfor.objects.filter(**sql_params_dict).order_by("info_id").all()
             parse_page_result.set_convert_handler(self.serializer_model)
             inject_page_params(req_dict=req_data, parse_page=parse_page_result)
@@ -122,8 +123,9 @@ class OperLogService:
             sql_params_dict = {}
             inject_sql_params_dict(req_dict=req_data, sql_param_dict=sql_params_dict, handler=self.search_key_handler)
             parse_sql_columns(req_dict=req_data, sql_params_dict=sql_params_dict, columns=self.get_time_columns())
+            del_int_column_key(sql_params_dict, ['is_asc', 'order_by_column'])
             query_set = SysLogininfor.objects.filter(**sql_params_dict).order_by("info_id").all()
-            response = ResponseStream().query_set_to_excel_http_response(name="操作日志记录信息", query_set=query_set)
+            response = ResponseStream().query_set_to_excel_http_response(name="操作日志记录信息", query_set=query_set, time_fields=['login_time'])
             return response
         except Exception as e:
             logger.error(f'[导出操作日志记录信息]异常')

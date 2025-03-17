@@ -1,7 +1,7 @@
 from django.views import View
 
 from common.http import AjaxJsonResponse, RequestGetParams, ParseRequestMetaUser, RequestBody, RequestPostParams
-from system.dict.type.services import DictDataService
+from system.dict.data.services import DictDataService
 
 
 class DictDataListView(View):

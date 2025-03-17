@@ -192,3 +192,13 @@ def del_not_model_key(params_dict: dict = None, all_columns: list = None):
         for k in keys:
             if k not in all_columns:
                 del params_dict[k]
+
+def del_int_column_key(params_dict: dict = None, all_columns: list = None):
+    """
+    删除非模型字段 key
+    """
+    if params_dict is not None and all_columns is not None:
+        keys = set(params_dict.keys())
+        for k in keys:
+            if k in all_columns:
+                del params_dict[k]

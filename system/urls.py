@@ -4,7 +4,7 @@ from django.urls import path, include, re_path
 from system.config.views import ConfigListView, ConfigInfoView
 from system.dict.data.views import DictDataListView, DictDataInfoView
 from system.dict.type.views import DictTypeListView, DictTypeInfoView
-from system.dict.views import DictDataType
+from system.dict.views import DictDataType, DictDataTypeTree
 from system.menu.views import MenuInfoView, MenuListView, MenuTreeView
 from system.notice.views import NoticeListView, NoticeInfoView
 from system.post.views import PostListView, PostInfoView
@@ -57,6 +57,8 @@ urlpatterns = [
 
     # 字典类型
     path('dict/type/list', DictTypeListView.as_view(), name='dict_type_list'), # 字典类型列表
+    path('dict/type/refreshCache', DictTypeListView.as_view(), name='dict_type_list_refreshCache'), # 字典类型列表 刷新缓存
+    path('dict/type/optionselect', DictDataTypeTree.as_view(), name='dict_type_list_optionselect'), # 字典类型树
     path('dict/type/export', DictTypeListView.as_view(), name='dict_type_list_export'), # 字典类型信息 导出
     path('dict/type/<str:dict_ids>', DictTypeInfoView.as_view(), name='dict_type_info'), # 字典类型列表 查询 & 删除
     path('dict/type', DictTypeInfoView.as_view(), name='dict_type_info_add'), # 字典类型 新增

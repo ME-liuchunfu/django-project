@@ -20,6 +20,9 @@ class DictTypeListView(View):
         response = DictTypeService().export_dict(req_data=req_data)
         return response
 
+    def delete(self, request):
+        # todo test
+        return AjaxJsonResponse()
 
 class DictTypeInfoView(View):
     """
