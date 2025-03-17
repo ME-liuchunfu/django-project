@@ -196,7 +196,8 @@ LOGGING = {
         },
     },
 }
-
+# 日志名称
+APP_LOGGER_NAME='loggers'
 
 # 白名单
 WHITE_URL_DIST = {

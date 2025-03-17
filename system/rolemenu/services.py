@@ -1,8 +1,9 @@
 import logging
 
 from system.models import SysRoleMenu
+from django.conf import settings
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(settings.APP_LOGGER_NAME')
 
 class RoleMenuService:
 

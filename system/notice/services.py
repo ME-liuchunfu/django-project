@@ -9,8 +9,9 @@ from common.http import ResponseStream
 from common.utils import keys_to_snake, keys_to_camel
 from system.models import SysNotice
 from system.serializers.models import SysNoticeSerializer
+from django.conf import settings
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(settings.APP_LOGGER_NAME')
 
 
 class NoticeService:

@@ -1,4 +1,6 @@
 import logging
+
+from django.conf import settings
 from django.utils import timezone
 from django.db.models import Q
 
@@ -7,7 +9,7 @@ from system.models import SysMenu
 from system.serializers.models import SysMenuSerializer
 from system.user.permission_services import ADMIN_USER_ID
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(settings.APP_LOGGER_NAME)
 
 
 class MenuService:

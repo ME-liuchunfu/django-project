@@ -12,7 +12,7 @@ import logging
 
 from system.user.permission_services import get_routers
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(settings.APP_LOGGER_NAME')
 
 
 class LoginView(View):

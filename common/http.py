@@ -3,8 +3,9 @@ import logging
 import pandas as pd
 from django.db.models import QuerySet
 from django.http import JsonResponse, QueryDict, HttpResponse
+from django.conf import settings
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(settings.APP_LOGGER_NAME')
 
 
 class AjaxJsonResponse(JsonResponse):

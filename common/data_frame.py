@@ -3,8 +3,9 @@ from datetime import datetime
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage, Page
 from django.db.models import QuerySet
 from django.utils import timezone
+from django.conf import settings
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(settings.APP_LOGGER_NAME')
 
 
 class PageResult:

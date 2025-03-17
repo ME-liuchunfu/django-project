@@ -11,8 +11,9 @@ from common.http import ResponseStream
 from common.utils import keys_to_camel, keys_to_snake
 from system.models import SysDept
 from system.serializers.models import SysDeptSerializer
+from django.conf import settings
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(settings.APP_LOGGER_NAME')
 
 
 class DeptService:
