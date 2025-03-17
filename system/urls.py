@@ -2,6 +2,8 @@
 from django.urls import path, include, re_path
 
 from system.config.views import ConfigListView, ConfigInfoView
+from system.dict.data.views import DictDataListView, DictDataInfoView
+from system.dict.type.views import DictTypeListView, DictTypeInfoView
 from system.dict.views import DictDataType
 from system.menu.views import MenuInfoView, MenuListView, MenuTreeView
 from system.notice.views import NoticeListView, NoticeInfoView
@@ -52,4 +54,19 @@ urlpatterns = [
     path('notice/export', NoticeListView.as_view(), name='notice_list_export'), # 通知公告信息 导出
     path('notice/<str:notice_ids>', NoticeInfoView.as_view(), name='notice_info'), # 通知公告列表 查询 & 删除
     path('notice', NoticeInfoView.as_view(), name='notice_info_add'), # 通知公告 新增
+
+    # 字典类型
+    path('dict/type/list', DictTypeListView.as_view(), name='dict_type_list'), # 字典类型列表
+    path('dict/type/export', DictTypeListView.as_view(), name='dict_type_list_export'), # 字典类型信息 导出
+    path('dict/type/<str:dict_ids>', DictTypeInfoView.as_view(), name='dict_type_info'), # 字典类型列表 查询 & 删除
+    path('dict/type', DictTypeInfoView.as_view(), name='dict_type_info_add'), # 字典类型 新增
+
+
+    # 字典值
+    path('dict/data/list', DictDataListView.as_view(), name='dict_data_list'), # 字典值列表
+    path('dict/data/export', DictDataListView.as_view(), name='dict_data_list_export'), # 字典值信息 导出
+    path('dict/data/<str:dict_ids>', DictDataInfoView.as_view(), name='dict_data_info'), # 字典值列表 查询 & 删除
+    path('dict/data', DictDataInfoView.as_view(), name='dict_data_info_add'), # 字典值 新增
+
+
 ]

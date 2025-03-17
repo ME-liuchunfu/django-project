@@ -11,7 +11,7 @@ import logging
 from common.cryption import cryption
 from common.http import AjaxJsonResponse
 
-logger = logging.getLogger(settings.APP_LOGGER_NAME')
+logger = logging.getLogger(settings.APP_LOGGER_NAME)
 
 
 

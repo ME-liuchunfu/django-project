@@ -13,7 +13,7 @@ from system.rolemenu.services import RoleMenuService
 from system.serializers.models import SysRoleSerializer
 from django.conf import settings
 
-logger = logging.getLogger(settings.APP_LOGGER_NAME')
+logger = logging.getLogger(settings.APP_LOGGER_NAME)
 
 
 class RoleService:

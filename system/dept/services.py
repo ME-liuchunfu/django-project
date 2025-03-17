@@ -13,7 +13,7 @@ from system.models import SysDept
 from system.serializers.models import SysDeptSerializer
 from django.conf import settings
 
-logger = logging.getLogger(settings.APP_LOGGER_NAME')
+logger = logging.getLogger(settings.APP_LOGGER_NAME)
 
 
 class DeptService:

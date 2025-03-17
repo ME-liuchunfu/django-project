@@ -10,7 +10,7 @@ from system.models import SysPost
 from system.serializers.models import SysPostSerializer
 from django.conf import settings
 
-logger = logging.getLogger(settings.APP_LOGGER_NAME')
+logger = logging.getLogger(settings.APP_LOGGER_NAME)
 
 
 class PostService:
