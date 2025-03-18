@@ -1,9 +1,13 @@
 import logging
 from datetime import datetime
+from sys import orig_argv
+
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage, Page
 from django.db.models import QuerySet
 from django.utils import timezone
 from django.conf import settings
+
+from common.utils import keys_to_snake, camel_to_snake
 
 logger = logging.getLogger(settings.APP_LOGGER_NAME)
 
@@ -202,3 +206,31 @@ def del_int_column_key(params_dict: dict = None, all_columns: list = None):
         for k in keys:
             if k in all_columns:
                 del params_dict[k]
+
+
+def sql_order_by_parse(req_data: dict = None, columns: list[str] = None, default_vals: list[str] = None)-> list[str]:
+    """
+    排序字段
+    :param req_data: 请求参数
+    :param columns: 排序字段
+    :return: 排序列表
+    """
+    res_orders = []
+    if columns is None:
+        columns = ['is_asc', 'order_by_column']
+
+    if req_data:
+        is_asc, order_by_column = columns
+        action = req_data.get(is_asc)
+        column = req_data.get(order_by_column)
+        if column:
+            column = camel_to_snake(column)
+            if action == 'descending':
+                res_orders.append(f'-{column}')
+            else:
+                res_orders.append(f'{column}')
+
+    if len(res_orders) == 0 and default_vals and len(default_vals) > 0:
+        res_orders.extend(default_vals)
+
+    return res_orders
