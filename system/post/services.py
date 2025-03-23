@@ -106,3 +106,14 @@ class PostService:
         except Exception as e:
             logger.error(f'[导出岗位信息]异常')
             raise ValueError('导出岗位信息异常') from e
+
+    def post_all(self) -> list:
+        res_datas = []
+        try:
+            query_set = SysPost.objects.all()
+            if query_set and len(query_set) > 0:
+                for post in query_set:
+                    res_datas.append(self.serializer_model(post))
+        except Exception as e:
+            logger.error(f'[查询岗位信息]异常', exc_info=True)
+        return res_datas

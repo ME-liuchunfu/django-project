@@ -9,6 +9,12 @@ ADMIN_USER_ID = 1
 ADMIN_PERMISSION = "*:*:*"
 
 
+def is_admin(user_id: int = None) -> bool:
+    if user_id is None:
+        return False
+    return ADMIN_USER_ID == user_id
+
+
 class MetaVo:
 
     def __init__(self, data: dict = None):

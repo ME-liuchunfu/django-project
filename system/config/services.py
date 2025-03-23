@@ -126,3 +126,17 @@ class ConfigService:
         except Exception as e:
             logger.error(f'[导出参数设置信息]异常')
             raise ValueError('导出参数设置信息异常') from e
+
+    def values_config_key(self, config_key: str) -> str:
+        res_data = ""
+        try:
+            if config_key:
+                query_set = SysConfig.objects.filter(config_key=config_key).all()
+                if query_set and len(query_set) > 0:
+                    res_data = query_set[0].config_value
+        except Exception as e:
+            logger.error(f'[查询参数设置信息值]异常,config_key:{config_key}', exc_info=True)
+
+        if res_data is None:
+            res_data = ""
+        return res_data
