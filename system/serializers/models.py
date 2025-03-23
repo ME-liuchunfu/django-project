@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from system.models import SysConfig, SysDept, SysDictData, SysDictType, SysLogininfor, SysMenu, SysNotice, SysOperLog, \
+from system.models import SysConfig, SysDept, SysDictData, SysDictType, SysMenu, SysNotice, \
     SysPost, SysRole, SysRoleDept, SysRoleMenu, SysUser, SysUserPost, SysUserRole
 
 
@@ -28,12 +28,6 @@ class SysDictTypeSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class SysLogininforSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SysLogininfor
-        fields = "__all__"
-
-
 class SysMenuSerializer(serializers.ModelSerializer):
     class Meta:
         model = SysMenu
@@ -44,13 +38,6 @@ class SysNoticeSerializer(serializers.ModelSerializer):
     class Meta:
         model = SysNotice
         fields = "__all__"
-
-
-class SysOperLogSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SysOperLog
-        fields = "__all__"
-
 
 class SysPostSerializer(serializers.ModelSerializer):
     class Meta:
