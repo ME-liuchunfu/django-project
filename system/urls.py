@@ -1,7 +1,7 @@
 
 from django.urls import path, include, re_path
 
-from system.config.views import ConfigListView, ConfigInfoView
+from system.config.views import ConfigListView, ConfigInfoView, ConfigKeyView
 from system.dict.data.views import DictDataListView, DictDataInfoView
 from system.dict.type.views import DictTypeListView, DictTypeInfoView
 from system.dict.views import DictDataType, DictDataTypeTree
@@ -10,6 +10,7 @@ from system.notice.views import NoticeListView, NoticeInfoView
 from system.post.views import PostListView, PostInfoView
 from system.role.views import RoleListView, RoleInfoView, RoleStatusView, RoleDataView
 from system.dept.views import DeptListView, DeptInfoView, DeptExcludeView
+from system.user.views import UserListView, UserInfoView, UserDeptTreeView, UserInfoGetView
 from system.views import LoginView
 
 urlpatterns = [
@@ -46,7 +47,8 @@ urlpatterns = [
     path('config/list', ConfigListView.as_view(), name='config_list'), # 参数设置列表
     path('config/refreshCache', ConfigListView.as_view(), name='config_list_refreshCache'), # 参数设置列表 刷新缓存
     path('config/export', ConfigListView.as_view(), name='config_list_export'), # 参数设置信息 导出
-    path('config/<str:config_ids>', ConfigInfoView.as_view(), name='config_info'), # 参数设置列表 查询 & 删除
+    path('config/configKey/<str:config_key>', ConfigKeyView.as_view(), name='config_key'), # 参数设置值 查询 & 删除
+    path('config/<str:config_ids>', ConfigInfoView.as_view(), name='config_info'), # 参数设置信息 查询 & 删除
     path('config', ConfigInfoView.as_view(), name='config_info_add'), # 参数设置 新增
 
     # 通知公告
@@ -69,6 +71,15 @@ urlpatterns = [
     path('dict/data/export', DictDataListView.as_view(), name='dict_data_list_export'), # 字典值信息 导出
     path('dict/data/<str:dict_ids>', DictDataInfoView.as_view(), name='dict_data_info'), # 字典值列表 查询 & 删除
     path('dict/data', DictDataInfoView.as_view(), name='dict_data_info_add'), # 字典值 新增
+
+
+    # 用户管理
+    path('user/list', UserListView.as_view(), name='user_list'), # 用户管理列表
+    path('user/deptTree', UserDeptTreeView.as_view(), name='user_deptTree'), # 用户树
+    path('user/export', UserListView.as_view(), name='user_list_export'), # 用户管理信息 导出
+    path('user/', UserInfoGetView.as_view(), name='user_info_get'), # 用户管理列表 查询
+    path('user/<str:user_ids>', UserInfoView.as_view(), name='user_info'), # 用户管理列表 查询 & 删除
+    path('user', UserInfoView.as_view(), name='user_info_add'), # 用户管理 新增
 
 
 ]

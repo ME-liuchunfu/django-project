@@ -54,3 +54,10 @@ class ConfigInfoView(View):
         user_name = user.get_username()
         res_data, _msg = ConfigService().update_config(user_id=user_id, user_name=user_name, config=req_dict)
         return AjaxJsonResponse(data=res_data, code=200 if res_data > 0 else 500, msg=_msg)
+
+
+class ConfigKeyView(View):
+
+    def get(self, request, config_key: str):
+        res_data = ConfigService().values_config_key(config_key=config_key)
+        return AjaxJsonResponse(data=res_data)

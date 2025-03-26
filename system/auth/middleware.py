@@ -34,6 +34,8 @@ class JwtAuthenticationMiddleware(MiddlewareMixin):
             token = request.META.get('HTTP_AUTHORIZATION')
             logger.info("[授权认证] request path: %s ,token=%s", path, token)
             try:
+                if token is None:
+                    return AjaxJsonResponse(code=401, msg='Token验证失败！')
                 prefix = "Bearer "
                 if token.startswith(prefix):
                     token = token[len(prefix):]

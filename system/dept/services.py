@@ -236,3 +236,21 @@ class DeptService:
             logger.error(f'[查询部门-排除节点]错误, dept_id:{dept_id}, req_dict:{req_dict}', exc_info=True)
 
         return res_datas
+
+    def dept_info_in_ids(self, dept_ids: tuple | list | set = None) -> dict:
+        res_datas = []
+        try:
+            if dept_ids:
+                query_set = SysDept.objects.filter(dept_id__in=dept_ids).all()
+                if query_set and len(query_set) > 0:
+                    for data in query_set:
+                        dt = self.serializer_model(data)
+                        res_datas.append(dt)
+        except Exception as e:
+            logger.error(f'[查询部门-指定部门id]错误, dept_ids:{dept_ids}', exc_info=True)
+
+        res_dict = {}
+        if res_datas:
+            for data in res_datas:
+                res_dict[data['deptId']] = data
+        return res_dict

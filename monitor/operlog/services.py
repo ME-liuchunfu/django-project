@@ -7,8 +7,8 @@ from common.data_frame import PageResult, ParsePageResult, inject_page_params, i
     get_model_fields_name, del_not_model_key, parse_sql_columns, sql_date_parse, del_int_column_key, sql_order_by_parse
 from common.http import ResponseStream
 from common.utils import keys_to_snake, keys_to_camel
-from system.models import SysOperLog
-from system.serializers.models import SysOperLogSerializer
+from monitor.models import SysOperLog
+from monitor.serializers.models import SysOperLogSerializer
 from django.conf import settings
 
 logger = logging.getLogger(settings.APP_LOGGER_NAME)

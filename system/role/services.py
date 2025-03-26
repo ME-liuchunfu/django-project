@@ -8,7 +8,7 @@ from common.data_frame import PageResult, ParsePageResult, inject_page_params, i
 from common.http import ResponseStream
 from common.utils import keys_to_snake, keys_to_camel
 from system.dept.services import DeptService
-from system.models import SysRole, SysRoleMenu
+from system.models import SysRole, SysRoleMenu, SysUserRole
 from system.rolemenu.services import RoleMenuService
 from system.serializers.models import SysRoleSerializer
 from django.conf import settings
@@ -92,7 +92,8 @@ class RoleService:
             row = self.add_role_menus(role_id=sys_role.role_id, req_dict=keys_to_snake(req_dict))
             return row, None
         except Exception as e:
-            logger.error(f'[新增角色信息]异常, user_id:{user_id}, user_name:{user_name}, req_dict:{req_dict}', exc_info=True)
+            logger.error(f'[新增角色信息]异常, user_id:{user_id}, user_name:{user_name}, req_dict:{req_dict}',
+                         exc_info=True)
             return 0, '新增角色错误'
 
     def add_role_menus(self, role_id: int, req_dict: dict) -> int:
@@ -151,7 +152,7 @@ class RoleService:
 
         return row, None
 
-    def export_role(self, req_data : dict) -> HttpResponse:
+    def export_role(self, req_data: dict) -> HttpResponse:
         try:
             req_data = keys_to_snake(req_data)
             sql_params_dict = {}
@@ -189,9 +190,10 @@ class RoleService:
 
         return res_dict
 
-    def dept_tree(self, role_id:int) -> dict:
+    def dept_tree(self, role_id: int) -> dict:
         sys_role = SysRole.objects.filter(role_id=role_id).get()
-        keys = DeptService().dept_list_by_role_id(role_id=sys_role.role_id, dept_check_strictly=sys_role.dept_check_strictly)
+        keys = DeptService().dept_list_by_role_id(role_id=sys_role.role_id,
+                                                  dept_check_strictly=sys_role.dept_check_strictly)
         dept_list = DeptService().dept_tree_list(params_dict={})
         depts = DeptService().build_dept_tree(dept_list)
         res_dict = {
@@ -199,3 +201,74 @@ class RoleService:
             "depts": depts
         }
         return res_dict
+
+    def role_info_in_ids(self, role_ids: tuple | list | set = None) -> dict:
+        res_datas = []
+        try:
+            if role_ids:
+                query_set = SysRole.objects.filter(role_id__in=role_ids).all()
+                if query_set and len(query_set) > 0:
+                    for data in query_set:
+                        role = self.serializer_model(data)
+                        res_datas.append(role)
+        except Exception as e:
+            logger.error(f'[查询角色信息-指定角色id],异常', exc_info=True)
+
+        res_dict = {}
+        if res_datas:
+            for data in res_datas:
+                res_dict[data['roleId']] = data
+        return res_dict
+
+    def role_all(self) -> list:
+        res_datas = []
+        try:
+            query_set = SysRole.objects.all()
+            if query_set and len(query_set) > 0:
+                for data in query_set:
+                    role = self.serializer_model(data)
+                    res_datas.append(role)
+        except Exception as e:
+            logger.error(f'[用户角色]查询异常', exc_info=True)
+        return res_datas
+
+
+class UserRoleService:
+
+    def role_ids_in_user_ids(self, user_ids: list | tuple | set = None) -> tuple:
+        res_datas = []
+        user_role_dict = {}
+        try:
+            if user_ids:
+                query_set = SysUserRole.objects.filter(user_id__in=user_ids).all()
+                if query_set and len(query_set) > 0:
+                    for data in query_set:
+                        res_datas.append(data.role_id)
+                        if data.user_id not in user_role_dict:
+                            user_role_dict[data.user_id] = [data.role_id]
+                        else:
+                            user_role_dict[data.user_id].append(data.role_id)
+        except Exception as e:
+            logger.error(f'[用户角色]查询异常', exc_info=True)
+        return set(res_datas), user_role_dict
+
+    def insert_user_role(self, user_id: int = None, role_ids: list | set | tuple = None):
+        try:
+            if user_id and role_ids:
+                datas = []
+                for role_id in role_ids:
+                    datas.append({
+                        'user_id': user_id,
+                        'role_id': role_id
+                    })
+                datas = [SysUserRole(**data) for data in datas]
+                SysUserRole.objects.bulk_create(datas)
+        except Exception as e:
+            logger.error(f'[新增用户角色]异常, user_id={user_id}, role_ids={role_ids}', exc_info=True)
+
+    def del_user_role(self, user_id: int = None):
+        try:
+            if user_id:
+                SysUserRole.objects.filter(user_id=user_id).delete()
+        except Exception as e:
+            logger.error(f'[删除用户角色]异常, user_id={user_id}', exc_info=True)
