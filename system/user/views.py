@@ -1,5 +1,6 @@
 from django.views import View
-from common.http import AjaxJsonResponse, ParseRequestMetaUser, RequestGetParams, RequestPostParams, RequestBody
+from common.http import AjaxJsonResponse, RequestGetParams, RequestPostParams, RequestBody
+from components import request_decorator
 from system.dept.services import DeptService
 from system.user.dto_serializers import UserInfoDto
 from system.user.permission_services import get_role_permission, get_menu_permission
@@ -7,7 +8,6 @@ from system.user.services import UserService
 
 
 class UserListView(View):
-
     """
     通知公告管理
     """
@@ -37,27 +37,21 @@ class UserInfoView(View):
         return AjaxJsonResponse(extra_dict=res_data)
 
     def delete(self, request, user_ids):
-        user_ids = [ int(v) for v in user_ids.split(',')]
+        user_ids = [int(v) for v in user_ids.split(',')]
         res_data = UserService().del_user(user_ids=user_ids)
         return AjaxJsonResponse(data=res_data)
 
     def post(self, request):
-        user = ParseRequestMetaUser(request)
-        req_dict= RequestBody(request).get_data()
-        user_id = user.get_userid()
-        user_name = user.get_username()
-        res_data, _msg = UserService().add_user(user_id=user_id, user_name=user_name, req_dict=req_dict)
+        req_dict = RequestBody(request).get_data()
+        res_data, _msg = UserService().add_user(user_id=request_decorator.user_id(),
+                                                user_name=request_decorator.username(), req_dict=req_dict)
         return AjaxJsonResponse(data=res_data, code=200 if res_data > 0 else 500, msg=_msg)
 
     def put(self, request):
-        user = ParseRequestMetaUser(request)
         req_dict = RequestBody(request).get_data()
-        user_id = user.get_userid()
-        user_name = user.get_username()
-        res_data, _msg = UserService().update_user(user_id=user_id, user_name=user_name, req_dict=req_dict)
+        res_data, _msg = UserService().update_user(user_id=request_decorator.user_id(),
+                                                   user_name=request_decorator.username(), req_dict=req_dict)
         return AjaxJsonResponse(data=res_data, code=200 if res_data > 0 else 500, msg=_msg)
-
-
 
 
 class LoginUserInfoView(View):
@@ -75,10 +69,11 @@ class LoginUserInfoView(View):
             permissions: (str)
         }
         """
-        auto_user = ParseRequestMetaUser(request)()
-        roles = get_role_permission(auto_user.get("user_id"), auto_user.get("username"))
-        permissions = get_menu_permission(auto_user.get("user_id"), auto_user.get("username"), roles=roles)
-        user_info = UserInfoDto(user=auto_user, roles=roles, permissions=permissions).get_data()
+        user_id = request_decorator.user_id()
+        username = request_decorator.username()
+        roles = get_role_permission(user_id=user_id, username=username)
+        permissions = get_menu_permission(user_id=user_id, username=username, roles=roles)
+        user_info = UserInfoDto(user=request_decorator.user_data(), roles=roles, permissions=permissions).get_data()
         return AjaxJsonResponse(msg='success', extra_dict=user_info)
 
 

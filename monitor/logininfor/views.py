@@ -1,6 +1,7 @@
 from django.views import View
 
-from common.http import AjaxJsonResponse, RequestGetParams, ParseRequestMetaUser, RequestBody, RequestPostParams
+from common.http import AjaxJsonResponse, RequestGetParams, RequestBody, RequestPostParams
+from components import request_decorator
 from monitor.logininfor.services import LogininforService
 
 
@@ -40,17 +41,11 @@ class LogininforInfoView(View):
         return AjaxJsonResponse(data=res_data)
 
     def post(self, request):
-        user = ParseRequestMetaUser(request)
         req_dict= RequestBody(request).get_data()
-        user_id = user.get_userid()
-        user_name = user.get_username()
-        res_data, _msg = LogininforService().add_info(user_id=user_id, user_name=user_name, req_dict=req_dict)
+        res_data, _msg = LogininforService().add_info(user_id=request_decorator.user_id(), user_name=request_decorator.username(), req_dict=req_dict)
         return AjaxJsonResponse(data=res_data, code=200 if res_data > 0 else 500, msg=_msg)
 
     def put(self, request):
-        user = ParseRequestMetaUser(request)
         req_dict = RequestBody(request).get_data()
-        user_id = user.get_userid()
-        user_name = user.get_username()
-        res_data, _msg = LogininforService().update_info(user_id=user_id, user_name=user_name, info=req_dict)
+        res_data, _msg = LogininforService().update_info(user_id=request_decorator.user_id(), user_name=request_decorator.username(), info=req_dict)
         return AjaxJsonResponse(data=res_data, code=200 if res_data > 0 else 500, msg=_msg)

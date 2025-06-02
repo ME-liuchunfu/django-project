@@ -1,22 +1,19 @@
-import json
-
 from django.conf import settings
 from django.views import View
 from rest_framework_jwt.settings import api_settings
-
+from common.constants import HttpParamsConstant, UserParamsConstant
 from common.cryption import cryption
 from common.cryption.cryption import bcrypt_check_password
-from common.http import AjaxJsonResponse, RequestBody, ParseJson, ParseRequestMetaUser
+from common.http import AjaxJsonResponse, RequestBody, ParseJson
+from components import request_decorator
 from system.models import SysUser
 import logging
-
 from system.user.permission_services import get_routers
 
 logger = logging.getLogger(settings.APP_LOGGER_NAME)
 
 
 class LoginView(View):
-
     """
     登录授权
     """
@@ -26,22 +23,22 @@ class LoginView(View):
         password = None
         try:
             LOGIN_WEB_CONF = settings.LOGIN_WEB_CONF
-            LOGIN_WEB_SECRETKEY = LOGIN_WEB_CONF.get("secretkey")
-            encrypt = LOGIN_WEB_CONF.get("encrypt") if 'encrypt' in LOGIN_WEB_CONF else False
+            LOGIN_WEB_SECRETKEY = LOGIN_WEB_CONF.get(HttpParamsConstant.SECRETKEY)
+            encrypt = LOGIN_WEB_CONF.get(HttpParamsConstant.ENCRYPT, False)
             form_json = RequestBody(request)()
-            encrypt_flag = form_json.get("encrypt")
+            encrypt_flag = form_json.get(HttpParamsConstant.ENCRYPT, False)
             if encrypt and (not encrypt_flag or encrypt_flag != True):
                 raise ValueError("参数错误")
 
             if encrypt:
-                params = form_json.get("params")
+                params = form_json.get(UserParamsConstant.PARAMS)
                 data = cryption.aes_decrypt_data(encrypted=params, key=LOGIN_WEB_SECRETKEY)
                 data = ParseJson(data)()
-                username = data.get("username")
-                password = data.get("password")
+                username = data.get(UserParamsConstant.USERNAME)
+                password = data.get(UserParamsConstant.PASSWORD)
             else:
-                username = form_json.get("username")
-                password = form_json.get("password")
+                username = form_json.get(UserParamsConstant.USERNAME)
+                password = form_json.get(UserParamsConstant.PASSWORD)
 
             # code = data.get("code")
             # uuid = data.get("uuid")
@@ -57,17 +54,16 @@ class LoginView(View):
             token = jwt_encode_handler(payload)
 
             # token进行二次加密
-            tokenEncrypt = LOGIN_WEB_CONF.get("tokenEncrypt")
-            if tokenEncrypt:
-                tokenEncryptKey = LOGIN_WEB_CONF.get("tokenEncryptKey")
-                token = cryption.aes_encrypt_data(token, key=tokenEncryptKey)
+            token_encrypt = LOGIN_WEB_CONF.get(HttpParamsConstant.TOKENENCRYPT, True)
+            if token_encrypt is True:
+                token_encrypt_key = LOGIN_WEB_CONF.get(HttpParamsConstant.TOKENENCRYPT_KEY, '')
+                token = cryption.aes_encrypt_data(token, key=token_encrypt_key)
 
         except Exception as e:
             logger.error(f"[登录授权失败] username:{username}, password:{password}", exc_info=True)
             return AjaxJsonResponse(code=500, msg="授权失败")
 
-        return AjaxJsonResponse(msg='success', extra_dict={'token':token})
-
+        return AjaxJsonResponse(msg='success', extra_dict={'token': token})
 
     def __validata(self, username, password):
         try:
@@ -98,7 +94,7 @@ class CaptchaImageView(View):
             }
             return AjaxJsonResponse(msg='success', extra_dict=data)
 
-        return AjaxJsonResponse(msg='success', extra_dict={'captchaEnabled':False, 'encrypt': False})
+        return AjaxJsonResponse(msg='success', extra_dict={'captchaEnabled': False, 'encrypt': False})
 
 
 class LogoutView(View):
@@ -108,12 +104,10 @@ class LogoutView(View):
 
 
 class RoutersView(View):
-
     """
     路由
     """
 
     def get(self, request):
-        user_id = ParseRequestMetaUser(request).get_userid()
-        menus_data = get_routers(user_id)
+        menus_data = get_routers(request_decorator.user_id())
         return AjaxJsonResponse(msg='success', data=menus_data)

@@ -75,43 +75,7 @@ class ParseJson:
         return self.data
 
 
-class ParseRequestMetaUser:
-    """
-    解析jwt授权用户信息
-    数据类型：dict
-    {
-        'user_id': int,
-        'username': str,
-        'exp': int 过期时间,
-        'email': str
-    }
-    """
-
-    def __init__(self, request):
-        self.user = {}
-        self.__parse(request)
-
-    def __parse(self, request):
-        auth_data = None
-        try:
-            if hasattr(request, "auth_data"):
-                auth_data = request.auth_data
-                self.user.update(auth_data)
-        except Exception as e:
-            logger.error(f'[http授权解析参数错误], {auth_data}', exc_info=True)
-
-    def __call__(self):
-        return self.user
-
-    def get_userid(self) -> int:
-        return self.user.get("user_id")
-
-    def get_username(self) -> str:
-        return self.user.get("username")
-
-
 class RequestGetParams:
-
     """
     解析http get参数
     """
@@ -134,8 +98,8 @@ class RequestGetParams:
     def get_data(self) -> tuple | list | dict:
         return self.data
 
-class RequestPostParams:
 
+class RequestPostParams:
     """
     解析http post from请求参数
     """
@@ -160,7 +124,6 @@ class RequestPostParams:
 
 
 class ResponseStream:
-
     """
     返回文件流
     """

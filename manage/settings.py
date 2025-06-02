@@ -53,7 +53,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "system.auth.middleware.JwtAuthenticationMiddleware"
+    "system.auth.middleware.JwtAuthenticationMiddleware",
+    "components.request_middleware.RequestMiddleware"
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -229,3 +230,30 @@ LOGIN_WEB_CONF = {
 JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=86400),
 }
+
+# 缓存配置
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",  # Redis地址和DB编号
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PASSWORD": None,  # 若Redis设置了密码
+            "CONNECTION_POOL_KWARGS": {
+                "max_connections": 100,
+                "health_check_interval": 30,  # 定期检查连接健康
+            },  # 连接池大小
+            "SOCKET_TIMEOUT": 5,  # 连接超时时间（秒）
+            # 序列化方式（默认pickle，推荐JSON更安全）
+            "SERIALIZER": "django_redis.serializers.json.JSONSerializer",
+            # 压缩大对象（节省空间，但增加CPU开销）
+            "COMPRESSOR": "django_redis.compressors.zlib.ZlibCompressor",
+        },
+    }
+}
+
+# 将会话存储到Redis
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"  # 使用上面配置的缓存别名
+# 缓存（DB）
+CACHE_ALIAS = "default"
