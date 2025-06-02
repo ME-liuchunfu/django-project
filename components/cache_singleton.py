@@ -1,3 +1,4 @@
+import json
 import logging
 from django.core.cache import cache
 from functools import wraps
@@ -11,15 +12,16 @@ class DjangoRedisCacheSingleton:
     Django-Redis 单例缓存类
     封装 django.core.cache 提供统一缓存接口
     """
-    _instance = None
+    instance = None
 
     def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super().__new__(cls)
-            cls._instance._initialized = False
-        return cls._instance
+        if not cls.instance:
+            cls.instance = super().__new__(cls)
+            cls.instance._initialized = False
+            cls.instance._create()
+        return cls.instance
 
-    def __init__(self, cache_alias: str = "default"):
+    def _create(self, cache_alias: str = "default"):
         if self._initialized:
             return
         self.cache_alias = cache_alias
@@ -28,7 +30,8 @@ class DjangoRedisCacheSingleton:
 
     def get(self, key: str, default: Any = None) -> Any:
         """获取缓存值"""
-        return self._cache.get(key, default)
+        val = self._cache.get(key, default)
+        return val
 
     def set(self, key: str, value: Any, timeout: Optional[int] = None) -> bool:
         """设置缓存值"""
@@ -77,7 +80,7 @@ class DjangoRedisCacheSingleton:
                     redis_key = f"{key_prefix}"
                     if cache_key is not None and cache_key in kwargs:
                         id = kwargs.get(cache_key)
-                        redis_key = f"{cache_key}:{str(id)}"
+                        redis_key = f"{key_prefix}:{cache_key}:{str(id)}"
 
                     # 尝试从缓存获取
                     result = self.get(redis_key)
@@ -88,13 +91,54 @@ class DjangoRedisCacheSingleton:
                     result = func(*args, **kwargs)
                     self.set(redis_key, result, timeout)
                 except Exception as e:
-                    logger.error(f'获取缓存错误 method: {func.__name__}, redis_key: {redis_key}')
+                    logger.error(f'获取缓存错误 method: {func.__name__}, redis_key: {redis_key}', exc_info=e)
 
                 return result
 
             return wrapper
 
         return decorator
+
+
+    def clear_cache_decorator(self,
+                        key_prefix: str = "cache",
+                        cache_key: Optional[str] = None):
+        """
+        缓存装饰器，用于清空缓存函数返回值
+
+        Args:
+            timeout: 缓存超时时间（秒）
+            key_prefix: 缓存键前缀
+            cache_key: str 二级缓存键
+        """
+
+        def decorator(func: Callable):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                # 生成缓存键（key_prefix和cache_key）
+                result = None
+                redis_key = None
+                try:
+                    redis_key = f"{key_prefix}"
+                    if cache_key is not None and cache_key in kwargs:
+                        id = kwargs.get(cache_key)
+                        redis_key = f"{key_prefix}:{cache_key}:{str(id)}"
+
+                    # 执行函数并缓存结果
+                    result = func(*args, **kwargs)
+                    self.delete(redis_key)
+                except Exception as e:
+                    logger.error(f'删除缓存错误 method: {func.__name__}, redis_key: {redis_key}', exc_info=e)
+
+                return result
+
+            return wrapper
+
+        return decorator
+
+    def del_join_keys(self, keys: list[str]):
+        del_key = ":".join(keys)
+        return self.delete(del_key)
 
     def batch_get(self, keys: list) -> dict:
         """批量获取缓存值"""

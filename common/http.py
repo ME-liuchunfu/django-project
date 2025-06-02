@@ -4,8 +4,19 @@ import pandas as pd
 from django.db.models import QuerySet
 from django.http import JsonResponse, QueryDict, HttpResponse
 from django.conf import settings
+from django.db import models
 
 logger = logging.getLogger(settings.APP_LOGGER_NAME)
+
+
+def get_datetime_fields(model_class):
+    """获取模型中所有 DateTimeField 字段的名称"""
+    return [
+        field.name
+        for field in model_class._meta.get_fields()
+        if isinstance(field, models.DateTimeField)
+    ]
+
 
 
 class AjaxJsonResponse(JsonResponse):
@@ -152,6 +163,8 @@ class ResponseStream:
         if query_set is None:
             df_data = [[]]
         else:
+            all_dtm = get_datetime_fields(query_set.model)
+            time_fields = list(tuple(all_dtm))
             df_data = list(query_set.values())
 
         df = pd.DataFrame(df_data)

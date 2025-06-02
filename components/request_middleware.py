@@ -1,7 +1,10 @@
 """request 域"""
-from django.http import HttpRequest
+import json
+
+from django.http import HttpRequest, HttpResponse
 
 from common.constants import ThreadParamsConstant
+from common.exts import PermiError
 from common.request_storage import _request_locals
 
 
@@ -20,3 +23,28 @@ class RequestMiddleware:
             del _request_locals.current_request
 
         return response
+
+
+class ServiceExceptionMiddleware:
+    """全局异常处理"""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        return response
+
+    def process_exception(self, request, exception):
+        if isinstance(exception, PermiError):
+            # 返回 JSON 格式的错误响应
+            data = {
+                "code": exception.code,
+                "message": exception.msg
+            }
+            return HttpResponse(
+                json.dumps(data),
+                content_type="application/json",
+                status=200
+            )
+        return None  # 其他异常由 Django 处理

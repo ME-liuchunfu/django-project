@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.views import View
 from rest_framework_jwt.settings import api_settings
@@ -6,6 +8,7 @@ from common.cryption import cryption
 from common.cryption.cryption import bcrypt_check_password
 from common.http import AjaxJsonResponse, RequestBody, ParseJson
 from components import request_decorator
+from components.request_decorator import clear_user_all_permis
 from system.models import SysUser
 import logging
 from system.user.permission_services import get_routers
@@ -50,6 +53,7 @@ class LoginView(View):
             jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
             # 将用户对象传递进去，获取到该对象的属性值
             payload = jwt_payload_handler(user)
+            payload[UserParamsConstant.JWT_UUID_KEY] = f'permi:{user.user_id}:{uuid.uuid4().hex}'
             # 将属性值编码成jwt格式的字符串
             token = jwt_encode_handler(payload)
 
@@ -100,6 +104,7 @@ class CaptchaImageView(View):
 class LogoutView(View):
 
     def post(self, request):
+        clear_user_all_permis()
         return AjaxJsonResponse(msg='success')
 
 

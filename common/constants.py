@@ -26,6 +26,9 @@ class UserParamsConstant:
     USER_KEY = "user_data"
     USERNAME_KEY = "username"
 
+    JWT_UUID_KEY = "cache_uuid"
+
+
 
 
 class ThreadParamsConstant:

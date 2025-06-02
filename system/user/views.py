@@ -1,6 +1,7 @@
 from django.views import View
 from common.http import AjaxJsonResponse, RequestGetParams, RequestPostParams, RequestBody
 from components import request_decorator
+from components.request_decorator import has_permis
 from system.dept.services import DeptService
 from system.user.dto_serializers import UserInfoDto
 from system.user.permission_services import get_role_permission, get_menu_permission
@@ -12,16 +13,19 @@ class UserListView(View):
     通知公告管理
     """
 
+    @has_permis("system:user:list")
     def get(self, request):
         req_data = RequestGetParams(request).get_data()
         res_data = UserService().user_list(req_data).as_dict()
         return AjaxJsonResponse(extra_dict=res_data)
 
+    @has_permis("system:user:export")
     def post(self, request):
         req_data = RequestPostParams(request).get_data()
         response = UserService().export_user(req_data=req_data)
         return response
 
+    @has_permis("system:user:remove")
     def delete(self, request):
         res_datas = UserService().clean_list()
         return AjaxJsonResponse(data=res_datas)
@@ -32,21 +36,25 @@ class UserInfoView(View):
     通知公告信息
     """
 
+    @has_permis("system:user:query")
     def get(self, request, user_ids):
         res_data = UserService().user_info(user_id=int(user_ids))
         return AjaxJsonResponse(extra_dict=res_data)
 
+    @has_permis("system:user:remove")
     def delete(self, request, user_ids):
         user_ids = [int(v) for v in user_ids.split(',')]
         res_data = UserService().del_user(user_ids=user_ids)
         return AjaxJsonResponse(data=res_data)
 
+    @has_permis("system:user:add")
     def post(self, request):
         req_dict = RequestBody(request).get_data()
         res_data, _msg = UserService().add_user(user_id=request_decorator.user_id(),
                                                 user_name=request_decorator.username(), req_dict=req_dict)
         return AjaxJsonResponse(data=res_data, code=200 if res_data > 0 else 500, msg=_msg)
 
+    @has_permis("system:user:edit")
     def put(self, request):
         req_dict = RequestBody(request).get_data()
         res_data, _msg = UserService().update_user(user_id=request_decorator.user_id(),

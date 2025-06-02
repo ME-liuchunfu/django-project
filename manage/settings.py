@@ -54,7 +54,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "system.auth.middleware.JwtAuthenticationMiddleware",
-    "components.request_middleware.RequestMiddleware"
+    "components.request_middleware.RequestMiddleware",
+    "components.request_middleware.ServiceExceptionMiddleware",
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -235,7 +236,7 @@ JWT_AUTH = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379",  # Redis地址和DB编号
+        "LOCATION": "redis://127.0.0.1:6379/0",  # Redis地址和DB编号
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "PASSWORD": None,  # 若Redis设置了密码
@@ -246,8 +247,7 @@ CACHES = {
             "SOCKET_TIMEOUT": 5,  # 连接超时时间（秒）
             # 序列化方式（默认pickle，推荐JSON更安全）
             "SERIALIZER": "django_redis.serializers.json.JSONSerializer",
-            # 压缩大对象（节省空间，但增加CPU开销）
-            "COMPRESSOR": "django_redis.compressors.zlib.ZlibCompressor",
+            "PICKLE_VERSION": -1,  # 禁用 pickle
         },
     }
 }

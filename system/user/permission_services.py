@@ -331,7 +331,7 @@ def __get_memu_permission_by_role_name(role_name: str) -> tuple:
 		from sys_menu m
 			 left join sys_role_menu rm on m.menu_id = rm.menu_id
 			 left join sys_role sr on sr.role_id = rm.role_id
-		where m.status = '0' and sr.role_name = %s
+		where m.status = '0' and sr.role_key = %s
     """, [role_name])
     if menus and len(menus) > 0:
         list_data = []
