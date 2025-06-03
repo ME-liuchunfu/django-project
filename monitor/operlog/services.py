@@ -118,6 +118,7 @@ class OperLogService:
 
         return row, None
 
+
     def export_oper(self, req_data: dict) -> HttpResponse:
         try:
             req_data = keys_to_snake(req_data)
@@ -140,3 +141,46 @@ class OperLogService:
         except Exception as e:
             logger.error(f'[清空操作日志]异常', exc_info=True)
         return row
+
+
+    def insert_oper(
+            self,
+            title: str,
+            business_type: int,
+            method_name: str,
+            request_method: str,
+            operator_type: int,
+            oper_name: str,
+            oper_url: str,
+            oper_ip: str,
+            oper_location: str,
+            status: int,
+            dept_name: str = '',
+            oper_param: str = '',
+            error_msg: str = '',
+            json_result: str = '',
+            cost_time: int = None
+    ):
+        try:
+            sys_oper = SysOperLog()
+            sys_oper.title = title
+            sys_oper.business_type = business_type
+            sys_oper.method = method_name
+            sys_oper.request_method = request_method
+            sys_oper.operator_type = operator_type
+            sys_oper.oper_name = oper_name
+            sys_oper.dept_name = dept_name
+            sys_oper.oper_url = oper_url
+            sys_oper.oper_ip = oper_ip
+            sys_oper.oper_location = oper_location
+            sys_oper.oper_param = oper_param
+            sys_oper.json_result = json_result
+            sys_oper.status = status
+            sys_oper.error_msg = error_msg
+            sys_oper.oper_time = timezone.now()
+            if cost_time is None:
+                cost_time = int(1000)
+            sys_oper.cost_time = cost_time
+            sys_oper.save()
+        except Exception as e:
+            logger.error(f'[插入新增操作日志记录信息]异常', exc_info=True)

@@ -5,7 +5,9 @@ from common.auth_params import auth_user_params
 from common.constants import UserParamsConstant
 from common.exts import PermiError
 from components.cache_singleton import DjangoRedisCacheSingleton
+from system.dept.services import DeptService
 from system.user.permission_services import get_role_permission, get_menu_permission
+from system.user.services import UserService
 
 
 @auth_user_params()
@@ -16,6 +18,16 @@ def user_id(user_id=None):
 @auth_user_params(userid_cache_key=UserParamsConstant.USERNAME_KEY)
 def username(username=None):
     return username
+
+
+@auth_user_params()
+def get_dept_name(user_id=None):
+    service = UserService()
+    user = service.user_info(user_id=user_id)
+    dept_id = user.get('deptId', 0)
+    dept_service = DeptService()
+    dept = dept_service.dept_info(dept_id=dept_id)
+    return dept.get('deptName', '')
 
 
 @auth_user_params(userid_cache_key=UserParamsConstant.USER_KEY)

@@ -3,12 +3,7 @@ import inspect
 from functools import wraps
 from typing import Callable, Dict, Any, Union
 from common.constants import UserParamsConstant, ThreadParamsConstant, HttpParamsConstant
-from common.request_storage import _request_locals
-
-
-def get_current_request():
-    """获取当前请求（仅在请求处理链中有效）"""
-    return getattr(_request_locals, ThreadParamsConstant.CURRENT_REQUEST, None)
+from common.request_storage import get_current_request
 
 
 def auth_user_params(userid_cache_key: str = None):

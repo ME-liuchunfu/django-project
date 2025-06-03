@@ -10,7 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import datetime
+import os
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from queue import Queue
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -257,3 +260,10 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"  # 使用上面配置的缓存别名
 # 缓存（DB）
 CACHE_ALIAS = "default"
+
+
+# 异步日志线程池
+LOGGING_EXECUTOR = ThreadPoolExecutor(
+    max_workers=min(32, (os.cpu_count() or 1) + 4),
+    thread_name_prefix="app-worker-logs-"
+)
