@@ -1,6 +1,7 @@
 from django.views import View
 from common.http import AjaxJsonResponse, RequestGetParams, RequestPostParams, RequestBody
 from components import request_decorator
+from components.log_back_decorator import log_async_logger, BusinessType
 from components.request_decorator import has_permis
 from system.dept.services import DeptService
 from system.user.dto_serializers import UserInfoDto
@@ -19,12 +20,15 @@ class UserListView(View):
         res_data = UserService().user_list(req_data).as_dict()
         return AjaxJsonResponse(extra_dict=res_data)
 
+
+    @log_async_logger(title="用户管理", business_type=BusinessType.EXPORT)
     @has_permis("system:user:export")
     def post(self, request):
         req_data = RequestPostParams(request).get_data()
         response = UserService().export_user(req_data=req_data)
         return response
 
+    @log_async_logger(title="用户管理", business_type=BusinessType.CLEAN)
     @has_permis("system:user:remove")
     def delete(self, request):
         res_datas = UserService().clean_list()
@@ -41,12 +45,14 @@ class UserInfoView(View):
         res_data = UserService().user_info(user_id=int(user_ids))
         return AjaxJsonResponse(extra_dict=res_data)
 
+    @log_async_logger(title="用户管理", business_type=BusinessType.DELETE)
     @has_permis("system:user:remove")
     def delete(self, request, user_ids):
         user_ids = [int(v) for v in user_ids.split(',')]
         res_data = UserService().del_user(user_ids=user_ids)
         return AjaxJsonResponse(data=res_data)
 
+    @log_async_logger(title="用户管理", business_type=BusinessType.INSERT)
     @has_permis("system:user:add")
     def post(self, request):
         req_dict = RequestBody(request).get_data()
@@ -54,6 +60,7 @@ class UserInfoView(View):
                                                 user_name=request_decorator.username(), req_dict=req_dict)
         return AjaxJsonResponse(data=res_data, code=200 if res_data > 0 else 500, msg=_msg)
 
+    @log_async_logger(title="用户管理", business_type=BusinessType.UPDATE)
     @has_permis("system:user:edit")
     def put(self, request):
         req_dict = RequestBody(request).get_data()

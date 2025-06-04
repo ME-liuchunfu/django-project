@@ -152,8 +152,9 @@ class DeptService:
     def dept_info(self, dept_id: int) -> dict:
         res_data = {}
         try:
-            data = SysDept.objects.filter(dept_id=dept_id).get()
-            res_data = self.serializer_model(data)
+            datas = SysDept.objects.filter(dept_id=dept_id)
+            if datas.exists():
+                res_data = self.serializer_model(datas.first())
         except Exception as e:
             logger.error(f'[查询部门信息]异常, dept_id: {dept_id}', exc_info=True)
         return res_data

@@ -48,6 +48,7 @@ class AjaxJsonResponse(JsonResponse):
         super().__init__(content, **kwargs)
 
 
+
 class RequestBody:
 
     def __init__(self, request):

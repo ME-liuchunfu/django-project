@@ -6,9 +6,16 @@ import inspect
 import json
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 from enum import Enum
 from functools import wraps
+from typing import Union
 
+from django.core.handlers.wsgi import WSGIRequest
+from django.http import JsonResponse, HttpRequest
+
+from common.http import RequestGetParams, RequestPostParams, RequestBody
 from common.iputils import get_client_ip
 from common.request_storage import get_current_request
 from components.request_decorator import get_dept_name, username
@@ -61,10 +68,26 @@ class BusinessType(Enum):
     CLEAN = 9
 
 
-def async_logger(
+def parse_request_param(req) -> str:
+    try:
+        if req.method.upper() == 'GET':
+            req_data = RequestGetParams(req).get_data()
+        elif req.method.upper() == 'put':
+            req_data = RequestBody(req).get_data()
+        else:
+            req_data = RequestPostParams(req).get_data()
+        oper_param = to_json(req_data)
+        return oper_param
+    except Exception as xe:
+        logger.error(f'获取请求参数错误', exc_info=True)
+
+    return ''
+
+
+def log_async_logger(
     title = "",
-    business_type: int = BusinessType.OTHER,
-    operator_type: int = OperatorType.MANAGE,
+    business_type: Union[int, BusinessType] = BusinessType.OTHER,
+    operator_type: Union[int, OperatorType] = OperatorType.MANAGE,
     executor = "LOGGING_EXECUTOR",
     save_request_data: bool = True,
     save_response_data: bool = True,
@@ -72,11 +95,17 @@ def async_logger(
 ):
     """异步日志装饰器，支持指定线程池"""
 
+    if isinstance(business_type, BusinessType):
+        business_type = business_type.value
+
+    if isinstance(operator_type, OperatorType):
+        operator_type = operator_type.value
+
     def decorator(func):
         @wraps(func)
-        async def wrapper(*args, **kwargs):
-            loop = asyncio.get_event_loop()
-            thread_pool = getattr(settings, executor)
+        def wrapper(*args, **kwargs):
+            # loop = asyncio.get_event_loop()
+            thread_pool: ThreadPoolExecutor = getattr(settings, executor)
             method_name = func.__name__
             request_method = 'none'
             oper_ip = ''
@@ -99,14 +128,16 @@ def async_logger(
                 oper_ip = get_client_ip(req)
                 dept_name = get_dept_name()
                 oper_name = username()
-                oper_url = result.build_absolute_uri()
+                # oper_url = req.build_absolute_uri()
+                oper_url = req.get_full_path()
+
+                if save_request_data:
+                    oper_param = parse_request_param(req)
+
             except Exception as e:
                 logger.error(f'执行错误:method:{func.__name__}', exc_info=True)
                 status = 1
                 error = e
-
-            if save_request_data:
-                oper_param = param_to_json(func=func, exclude_param_names=exclude_param_names, *args, **kwargs)
 
             json_result = ''
             if save_response_data:
@@ -129,8 +160,8 @@ def async_logger(
                     cost_time=cost_time, json_result=json_result
                 )
 
-
-            loop.run_in_executor(thread_pool, lambda: log())
+            thread_pool.submit(log)
+            # loop.run_in_executor(thread_pool, lambda: log())
 
             if error is not None:
                 raise error
@@ -167,10 +198,26 @@ def param_to_json(func, exclude_param_names, *args, **kwargs) -> str:
         return ''
 
 
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()  # 转为 ISO 格式字符串
+        return super().default(obj)
+
+
 
 def to_json(param) -> str:
     try:
-        return json.dumps(param, ensure_ascii=False, separators=(',', ':'))
+        data = param
+        if isinstance(param, JsonResponse):
+            data = param.content
+            if isinstance(data, bytes):
+                data = data.decode(encoding="utf-8")
+
+        if isinstance(data, str):
+            return data
+
+        return json.dumps(data, ensure_ascii=False, separators=(',', ':'))
     except Exception as e:
         pass
     return ''

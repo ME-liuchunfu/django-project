@@ -35,7 +35,7 @@ def auth_user_params(userid_cache_key: str = None):
                 if request:
                     user_data = getattr(request, HttpParamsConstant.AUTH_USER_DATA, None)
                     if user_data:
-                        all_params[userid_cache_key] = user_data.get(HttpParamsConstant.USER_ID, None)
+                        all_params[userid_cache_key] = user_data.get(userid_cache_key, None)
 
             # 调用原始函数
             return func(**all_params)

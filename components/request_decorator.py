@@ -6,7 +6,7 @@ from common.constants import UserParamsConstant
 from common.exts import PermiError
 from components.cache_singleton import DjangoRedisCacheSingleton
 from system.dept.services import DeptService
-from system.user.permission_services import get_role_permission, get_menu_permission
+from system.user.permission_services import get_role_permission, get_menu_permission, ADMIN_PERMISSION
 from system.user.services import UserService
 
 
@@ -27,6 +27,8 @@ def get_dept_name(user_id=None):
     dept_id = user.get('deptId', 0)
     dept_service = DeptService()
     dept = dept_service.dept_info(dept_id=dept_id)
+    if dept is None:
+        return None
     return dept.get('deptName', '')
 
 
@@ -81,21 +83,22 @@ def has_permis(perims: Union[list[str], str] = None, apply: str = 'and'):
             if all_permis is None or len(all_permis) == 0:
                 raise PermiError("没有操作权限")
 
-            if isinstance(perims, str):
-                if perims not in all_permis:
-                    raise PermiError("当前没有操作权限")
-            else:
-                if len(perims) == 1:
-                    if perims[0] not in all_permis:
+            if ADMIN_PERMISSION not in all_permis:
+                if isinstance(perims, str):
+                    if perims not in all_permis:
                         raise PermiError("当前没有操作权限")
-                    else:
-                        ret_flag = False
-                        for perim in perims:
-                            if perim not in all_permis:
-                                ret_flag = True
-
-                        if ret_flag is True:
+                else:
+                    if len(perims) == 1:
+                        if perims[0] not in all_permis:
                             raise PermiError("当前没有操作权限")
+                        else:
+                            ret_flag = False
+                            for perim in perims:
+                                if perim not in all_permis:
+                                    ret_flag = True
+
+                            if ret_flag is True:
+                                raise PermiError("当前没有操作权限")
 
             return func(*args, **kwargs)
 

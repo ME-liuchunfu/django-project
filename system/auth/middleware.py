@@ -68,10 +68,10 @@ class JwtAuthenticationMiddleware(MiddlewareMixin):
             logger.debug("[不需要token验证] request path: %s", path)
             return None
 
-    def parse(self, path, token, request):
+    def parse(self, path, token, request, token_flag=True):
         try:
-            if token is None:
-                return AjaxJsonResponse(code=401, msg='Token验证失败！')
+            if token is None and token_flag:
+                return AuthResponseDict(code=401, msg='Token验证失败！')
             prefix = f"{HttpParamsConstant.BEARER} "
             if token.startswith(prefix):
                 token = token[len(prefix):]
