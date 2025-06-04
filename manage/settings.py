@@ -101,11 +101,11 @@ WSGI_APPLICATION = "manage.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'creation-vue',
+        'NAME': 'django_db',
         'USER': 'root',
         'PASSWORD': 'root1234',
         'HOST': 'localhost',
-        'PORT': '3306'
+        'PORT': '3307'
     }
 }
 
@@ -251,6 +251,7 @@ CACHES = {
             # 序列化方式（默认pickle，推荐JSON更安全）
             "SERIALIZER": "django_redis.serializers.json.JSONSerializer",
             "PICKLE_VERSION": -1,  # 禁用 pickle
+            "TIMEOUT": 86400,
         },
     }
 }
