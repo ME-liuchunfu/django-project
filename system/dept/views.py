@@ -2,6 +2,7 @@ from django.views import View
 
 from common.http import RequestGetParams, AjaxJsonResponse, RequestPostParams, RequestBody
 from components import request_decorator
+from components.log_back_decorator import log_async_logger, BusinessType
 from components.request_decorator import has_permis
 from system.dept.services import DeptService
 
@@ -18,6 +19,7 @@ class DeptListView(View):
         res_data = DeptService().dept_list(req_data)
         return AjaxJsonResponse(data=res_data)
 
+    @log_async_logger(title="部门管理", business_type=BusinessType.EXPORT)
     @has_permis("system:dept:export")
     def post(self, request):
         req_data = RequestPostParams(request).get_data()
@@ -35,17 +37,20 @@ class DeptInfoView(View):
         res_data = DeptService().dept_info(post_id)
         return AjaxJsonResponse(data=res_data)
 
+    @log_async_logger(title="部门管理", business_type=BusinessType.DELETE)
     @has_permis("system:dept:remove")
     def delete(self, request, post_id):
         res_data = DeptService().del_dept(post_id)
         return AjaxJsonResponse(data=res_data)
 
+    @log_async_logger(title="部门管理", business_type=BusinessType.INSERT)
     @has_permis("system:dept:add")
     def post(self, request):
         req_dict= RequestBody(request).get_data()
         res_data = DeptService().add_dept(user_id=request_decorator.user_id(), user_name=request_decorator.username(), req_dict=req_dict)
         return AjaxJsonResponse(data=res_data, code=200 if res_data > 0 else 500)
 
+    @log_async_logger(title="部门管理", business_type=BusinessType.UPDATE)
     @has_permis("system:dept:edit")
     def put(self, request):
         req_dict = RequestBody(request).get_data()
