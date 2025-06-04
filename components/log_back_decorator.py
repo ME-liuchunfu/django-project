@@ -15,7 +15,7 @@ from django.http import JsonResponse, HttpRequest
 
 from common.constants import LOGGER_THREAD_POOL
 from common.http import RequestGetParams, RequestPostParams, RequestBody
-from common.iputils import get_client_ip
+from common.iputils import get_client_ip, get_real_address_by_ip
 from common.request_storage import get_current_request
 from components.request_decorator import get_dept_name, username
 from manage import settings
@@ -150,6 +150,7 @@ def log_async_logger(
                 if error is not None:
                     error_msg = str(error)
 
+                oper_location = get_real_address_by_ip(oper_ip)
                 OperLogService().insert_oper(
                     title=title, business_type=business_type, operator_type=operator_type,
                     method_name=method_name, request_method=request_method, oper_name=oper_name,

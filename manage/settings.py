@@ -268,3 +268,12 @@ LOGGING_EXECUTOR = ThreadPoolExecutor(
     max_workers=min(32, (os.cpu_count() or 1) + 4),
     thread_name_prefix="app-worker-logs-"
 )
+
+# ip解析
+IP_PARSE = {
+    "switchOn": True,
+    "IP_PARSE_URLS": [
+        "http://whois.pconline.com.cn/ipJson.jsp"
+    ]
+}
+

@@ -9,8 +9,7 @@ from typing import Union
 from django.utils import timezone
 
 from common.constants import LOGGER_THREAD_POOL, HTTP_USER_AGENT
-from common.iputils import get_client_ip
-from common.request_storage import get_current_request
+from common.iputils import get_client_ip, get_real_address_by_ip
 from common.user_agents_utils import parse_useragent
 from manage import settings
 from monitor.logininfor.services import LogininforService
@@ -42,7 +41,7 @@ def record_logininfor(
         thread_pool: ThreadPoolExecutor = getattr(settings, LOGGER_THREAD_POOL)
         user_agent = parse_useragent(req.META.get(HTTP_USER_AGENT, ''))
         ipaddr = get_client_ip(req)
-        login_location = ''
+        login_location = get_real_address_by_ip(ipaddr)
 
         if isinstance(status, LogLoginInforType):
             if status == LogLoginInforType.LOGIN_FAIL:
