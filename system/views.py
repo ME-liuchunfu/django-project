@@ -8,7 +8,8 @@ from common.cryption import cryption
 from common.cryption.cryption import bcrypt_check_password
 from common.http import AjaxJsonResponse, RequestBody, ParseJson
 from components import request_decorator
-from components.request_decorator import clear_user_all_permis
+from components.log_logininfor import record_logininfor, LogLoginInforType
+from components.request_decorator import clear_user_all_permis, username
 from system.models import SysUser
 import logging
 from system.user.permission_services import get_routers
@@ -63,8 +64,13 @@ class LoginView(View):
                 token_encrypt_key = LOGIN_WEB_CONF.get(HttpParamsConstant.TOKENENCRYPT_KEY, '')
                 token = cryption.aes_encrypt_data(token, key=token_encrypt_key)
 
+            record_logininfor(req=request, username=payload.get(UserParamsConstant.USERNAME_KEY, ''),
+                              status=LogLoginInforType.LOGIN_OK, message="登录成功")
+
         except Exception as e:
             logger.error(f"[登录授权失败] username:{username}, password:{password}", exc_info=True)
+            record_logininfor(req=request, username=username,
+                              status=LogLoginInforType.LOGIN_FAIL, message="登录授权失败")
             return AjaxJsonResponse(code=500, msg="授权失败")
 
         return AjaxJsonResponse(msg='success', extra_dict={'token': token})
@@ -104,6 +110,8 @@ class CaptchaImageView(View):
 class LogoutView(View):
 
     def post(self, request):
+        record_logininfor(req=request, username=username(),
+                          status=LogLoginInforType.LOGOUT, message="登出成功")
         clear_user_all_permis()
         return AjaxJsonResponse(msg='success')
 

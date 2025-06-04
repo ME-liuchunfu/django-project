@@ -34,3 +34,8 @@ class UserParamsConstant:
 class ThreadParamsConstant:
     """线程 常量"""
     CURRENT_REQUEST = "current_request"
+
+
+LOGGER_THREAD_POOL = "LOGGING_EXECUTOR"
+
+HTTP_USER_AGENT = "HTTP_USER_AGENT"

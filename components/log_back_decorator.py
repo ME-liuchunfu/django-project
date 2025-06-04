@@ -1,7 +1,7 @@
 """
 日志记录装饰器
 """
-import asyncio
+
 import inspect
 import json
 import logging
@@ -11,10 +11,9 @@ from datetime import datetime
 from enum import Enum
 from functools import wraps
 from typing import Union
-
-from django.core.handlers.wsgi import WSGIRequest
 from django.http import JsonResponse, HttpRequest
 
+from common.constants import LOGGER_THREAD_POOL
 from common.http import RequestGetParams, RequestPostParams, RequestBody
 from common.iputils import get_client_ip
 from common.request_storage import get_current_request
@@ -88,7 +87,7 @@ def log_async_logger(
     title = "",
     business_type: Union[int, BusinessType] = BusinessType.OTHER,
     operator_type: Union[int, OperatorType] = OperatorType.MANAGE,
-    executor = "LOGGING_EXECUTOR",
+    executor = LOGGER_THREAD_POOL,
     save_request_data: bool = True,
     save_response_data: bool = True,
     exclude_param_names: list[str] = None
@@ -229,3 +228,4 @@ def current_millis() -> int:
     等价于 Java 的 System.currentTimeMillis()
     """
     return int(time.time() * 1000)
+

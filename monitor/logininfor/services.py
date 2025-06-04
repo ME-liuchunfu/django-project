@@ -140,3 +140,27 @@ class LogininforService:
         except Exception as e:
             logger.error(f'[清空登录日志]异常')
         return row
+
+    def insert_logininfo(
+            self,
+            user_name,
+            ipaddr,
+            login_location,
+            browser,
+            os_name,
+            status,
+            msg,
+            login_time):
+        try:
+            sys_info = SysLogininfor()
+            sys_info.user_name=user_name
+            sys_info.ipaddr = ipaddr
+            sys_info.login_location = login_location
+            sys_info.browser = browser
+            sys_info.os = os_name
+            sys_info.status = status
+            sys_info.msg = msg
+            sys_info.login_time = login_time
+            sys_info.save()
+        except Exception as e:
+            logger.error(f'[新增登录日志记录信息]登录记录异常', exc_info=True)
