@@ -59,6 +59,7 @@ MIDDLEWARE = [
     "system.auth.middleware.JwtAuthenticationMiddleware",
     "components.request_middleware.RequestMiddleware",
     "components.request_middleware.ServiceExceptionMiddleware",
+    "components.response_middleware.CustomTokenHeaderMiddleware",
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -160,6 +161,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 handler404 = 'common.views.json_page_not_found_view'
 
 
+log_handlers = ['file'] + (['console'] if os.name == 'nt' else [])
+log_level = 'DEBUG'
 
 # 日志配置
 LOGGING = {
@@ -177,26 +180,51 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'DEBUG',
+            'level': log_level,
             'class': 'logging.FileHandler',
             'filename': 'django_app.log',
             'formatter': 'verbose',
         },
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['file', 'console'],
-            'level': 'DEBUG',
+            'handlers': log_handlers,
+            'level': log_level,
             'propagate': True,
         },
         'django.db.backends': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'handlers': log_handlers,
+            'level': log_level,
+            'propagate': True,
+        },
+        'common': {
+            'handlers': log_handlers,
+            'level': log_level,
+            'propagate': True,
+        },
+        'components': {
+            'handlers': log_handlers,
+            'level': log_level,
+            'propagate': True,
+        },
+        'manage': {
+            'handlers': log_handlers,
+            'level': log_level,
+            'propagate': True,
+        },
+        'system': {
+            'handlers': log_handlers,
+            'level': log_level,
+            'propagate': True,
+        },
+        'monitor': {
+            'handlers': log_handlers,
+            'level': log_level,
             'propagate': True,
         },
     },
@@ -277,3 +305,8 @@ IP_PARSE = {
     ]
 }
 
+# token 自动刷新时间
+TOKEN_FLUSH_CONF = {
+    "time": (5 * 60 * 60),
+    "exp_time": int(48 * 60 * 60)
+}

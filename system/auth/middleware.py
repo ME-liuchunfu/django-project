@@ -60,13 +60,34 @@ class JwtAuthenticationMiddleware(MiddlewareMixin):
 
         elif path in white_list and path == "/logout":
             token = request.META.get(HttpParamsConstant.HTTP_AUTHORIZATION, '')
-            ret = self.parse(path=path, token=token, request=request)
-            if ret:
-                return AjaxJsonResponse(**ret)
-
+            self.parse_logout(path=path, token=token, request=request)
         else:
             logger.debug("[不需要token验证] request path: %s", path)
             return None
+
+
+    def parse_logout(self, path, token, request, token_flag=True):
+        try:
+            if token is None and token_flag:
+                return
+            prefix = f"{HttpParamsConstant.BEARER} "
+            if token.startswith(prefix):
+                token = token[len(prefix):]
+
+            # 先解密，后解jwt
+            LOGIN_WEB_CONF = settings.LOGIN_WEB_CONF
+            tokenEncrypt = LOGIN_WEB_CONF.get(HttpParamsConstant.TOKENENCRYPT)
+            if tokenEncrypt:
+                tokenEncryptKey = LOGIN_WEB_CONF.get(HttpParamsConstant.TOKENENCRYPT_KEY)
+                token = cryption.aes_decrypt_data(encrypted=token, key=tokenEncryptKey)
+
+            jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
+            decode_data = jwt_decode_handler(token)
+            # 授权后的信息放到request域
+            setattr(request, HttpParamsConstant.AUTH_USER_DATA, decode_data)
+        except Exception:
+            logger.warning("[token认证异常] request path: %s , token=%s", path, token)
+
 
     def parse(self, path, token, request, token_flag=True):
         try:

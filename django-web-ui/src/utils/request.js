@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Notification, MessageBox, Message, Loading } from 'element-ui'
 import store from '@/store'
-import { getToken } from '@/utils/auth'
+import { getToken, setToken } from '@/utils/auth'
 import errorCode from '@/utils/errorCode'
 import { tansParams, blobValidate } from "@/utils/app-utils";
 import cache from '@/plugins/cache'
@@ -104,6 +104,15 @@ service.interceptors.response.use(res => {
       Notification.error({ title: msg })
       return Promise.reject('error')
     } else {
+       // 获取相应头，如果存在token更新，需要更新token
+       try{
+           const flushToken = res.headers['flush_token'];
+           if (flushToken) {
+               setToken(flushToken)
+           }
+       } catch(err) {
+
+       }
       return res.data
     }
   },
