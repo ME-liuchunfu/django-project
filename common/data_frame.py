@@ -80,7 +80,7 @@ class ParsePageResult:
             page_obj = None
         except Exception as e:
             page_obj = None
-            logger.error(f'[分页处理异常]')
+            logger.error(f'[分页处理异常]', exc_info=True)
         data_list = self.__parse_handler(page_obj)
         return PageResult(total=count, datas=data_list)
 
@@ -120,6 +120,23 @@ def inject_page_params(req_dict: dict = None, parse_page: ParsePageResult = None
         parse_page.set_page_size(page_size)
         parse_page.set_cur_page(page_num)
 
+
+def remove_order_columns(params: dict) -> dict:
+    """移除排序字段"""
+    ret_dict = {}
+    try:
+        is_ascending = params.pop('is_asc', None)
+        if is_ascending == 'descending':
+            ret_dict['is_asc'] = False
+        else:
+            ret_dict['is_asc'] = True
+        order_column = params.pop('order_by_column', None)
+        if order_column is not None:
+            order_column = camel_to_snake(order_column)
+        ret_dict['order_column'] = order_column
+    except:
+        pass
+    return ret_dict
 
 def inject_sql_params_dict(req_dict: dict = None,
                            sql_param_dict: dict = None,

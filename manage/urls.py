@@ -18,7 +18,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from system.views import LoginView, LogoutView, CaptchaImageView, RoutersView
-
 from system.user.views import LoginUserInfoView
 
 
@@ -31,5 +30,6 @@ urlpatterns = [
     path('getRouters', RoutersView.as_view(), name='getRouters'), # 路由
     path('system/', include('system.urls')), # 系统模块
     path('monitor/', include('monitor.urls')), # 监控模块
+    path('tool/gen/', include('generator.urls')), # 代码生成工具
 
 ]

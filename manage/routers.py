@@ -9,6 +9,7 @@ class DatabaseRouter:
 
     route_app_labels = {
         'system': 'config',  # system 应用的模型使用 config 数据库
+        'generator': 'config',  # generator 应用的模型使用 config 数据库
         'monitor': 'default',  # monitor 应用的模型使用 default 数据库
     }
 

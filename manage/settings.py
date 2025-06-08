@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_jwt",
     "system.apps.SystemConfig",
-    "monitor.apps.MonitorConfig"
+    "monitor.apps.MonitorConfig",
+    "generator.apps.GeneratorConfig",
 ]
 
 MIDDLEWARE = [
@@ -116,6 +117,14 @@ DATABASES = {
         'PASSWORD': 'root1234',
         'HOST': 'localhost',
         'PORT': '3306'
+    },
+    'information_schema': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'information_schema',
+        'USER': 'root',
+        'PASSWORD': 'root1234',
+        'HOST': 'localhost',
+        'PORT': '3306'
     }
 }
 
@@ -173,7 +182,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 handler404 = 'common.views.json_page_not_found_view'
 
 
-log_handlers = ['file'] + (['console'] if os.name == 'nt' else [])
+log_handlers = ['file'] + (['console'] if os.name == 'nt' else ['console'])
 log_level = 'DEBUG'
 
 # 日志配置
@@ -237,6 +246,11 @@ LOGGING = {
         'monitor': {
             'handlers': log_handlers,
             'level': log_level,
+            'propagate': True,
+        },
+        'generator': {
+            'handlers': log_handlers,
+            'level': 'DEBUG',
             'propagate': True,
         },
     },
