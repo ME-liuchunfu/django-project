@@ -86,7 +86,7 @@ class LoginView(View):
                 raise ValueError("账号密码不正确")
             return user
         except Exception as e:
-            logger.error(f"[查询错误], username:{username}", exc_info=True)
+            logger.error(f"[查询错误], username:{username}", exc_info=False)
             raise ValueError('查询异常') from e
 
 

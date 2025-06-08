@@ -60,6 +60,7 @@ MIDDLEWARE = [
     "components.request_middleware.RequestMiddleware",
     "components.request_middleware.ServiceExceptionMiddleware",
     "components.response_middleware.CustomTokenHeaderMiddleware",
+    "manage.middleware.JsonServerErrorMiddleware",
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -102,13 +103,24 @@ WSGI_APPLICATION = "manage.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django_db',
+        'NAME': 'creation-vue',
         'USER': 'root',
         'PASSWORD': 'root1234',
         'HOST': 'localhost',
-        'PORT': '3307'
+        'PORT': '3306'
+    },
+    'config': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'config-creation-vue',
+        'USER': 'root',
+        'PASSWORD': 'root1234',
+        'HOST': 'localhost',
+        'PORT': '3306'
     }
 }
+
+# 数据库路由
+DATABASE_ROUTERS = ['manage.routers.DatabaseRouter']
 
 # 数据库表迁移管理
 DJANGO_APP_DATABASES_TABLES_MANAGE = False
